@@ -40,6 +40,32 @@ const Register = () => {
               />
             </div>
 
+            {/* Username Field */}
+            <div>
+              <label htmlFor="username" className="block text-royal-blue font-semibold mb-2">
+                Username
+              </label>
+              <input
+                type="text"
+                id="username"
+                placeholder="johndoe"
+                className="w-full px-4 py-3 border-2 border-powder-blue rounded-lg focus:border-royal-blue focus:outline-none transition-colors duration-200 text-royal-blue"
+              />
+            </div>
+
+            {/* Contact Number Field */}
+            <div>
+              <label htmlFor="contact_no" className="block text-royal-blue font-semibold mb-2">
+                Contact Number
+              </label>
+              <input
+                type="tel"
+                id="contact_no"
+                placeholder="+1 234 567 8900"
+                className="w-full px-4 py-3 border-2 border-powder-blue rounded-lg focus:border-royal-blue focus:outline-none transition-colors duration-200 text-royal-blue"
+              />
+            </div>
+
             {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-royal-blue font-semibold mb-2">
@@ -53,42 +79,10 @@ const Register = () => {
               />
             </div>
 
-            {/* Confirm Password Field */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-royal-blue font-semibold mb-2">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                placeholder="••••••••"
-                className="w-full px-4 py-3 border-2 border-powder-blue rounded-lg focus:border-royal-blue focus:outline-none transition-colors duration-200 text-royal-blue"
-              />
-            </div>
-
-            {/* Terms & Conditions */}
-            <div className="flex items-start">
-              <input
-                type="checkbox"
-                id="terms"
-                className="w-4 h-4 mt-1 text-royal-blue border-powder-blue rounded focus:ring-royal-blue"
-              />
-              <label htmlFor="terms" className="ml-2 text-royal-blue text-sm">
-                I agree to the{' '}
-                <a href="#" className="font-semibold hover:text-powder-blue transition-colors">
-                  Terms of Service
-                </a>{' '}
-                and{' '}
-                <a href="#" className="font-semibold hover:text-powder-blue transition-colors">
-                  Privacy Policy
-                </a>
-              </label>
-            </div>
-
             {/* Register Button */}
             <button
               type="submit"
-              className="w-full bg-royal-blue text-bone py-3 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl mt-6"
+              className="w-full bg-royal-blue text-bone py-3 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl mt-6 cursor-pointer"
             >
               Create Account
             </button>

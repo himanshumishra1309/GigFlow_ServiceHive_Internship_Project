@@ -15,7 +15,7 @@ const MyGigs = () => {
               </p>
             </div>
             <a href="/create-gig">
-              <button className="bg-bone text-royal-blue px-6 py-3 rounded-lg font-bold hover:bg-powder-blue transition-all duration-200 shadow-lg">
+              <button className="bg-bone text-royal-blue px-6 py-3 rounded-lg font-bold hover:bg-powder-blue transition-all duration-200 shadow-lg cursor-pointer">
                 + Post New Job
               </button>
             </a>
@@ -28,13 +28,13 @@ const MyGigs = () => {
         <div className="max-w-7xl mx-auto">
           {/* Tabs */}
           <div className="flex space-x-4 mb-8 border-b-2 border-powder-blue">
-            <button className="px-6 py-3 text-royal-blue font-bold border-b-4 border-royal-blue -mb-0.5">
+            <button className="px-6 py-3 text-royal-blue font-bold border-b-4 border-royal-blue -mb-0.5 cursor-pointer">
               All Gigs (8)
             </button>
-            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity">
+            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
               Open (5)
             </button>
-            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity">
+            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
               Assigned (3)
             </button>
           </div>
@@ -177,7 +177,7 @@ const MyGigs = () => {
               Start by posting your first job and connect with talented freelancers
             </p>
             <a href="/create-gig">
-              <button className="bg-royal-blue text-bone px-8 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all duration-200">
+              <button className="bg-royal-blue text-bone px-8 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all duration-200 cursor-pointer">
                 Post Your First Job
               </button>
             </a>

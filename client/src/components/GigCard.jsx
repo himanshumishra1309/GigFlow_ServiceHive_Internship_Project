@@ -28,7 +28,7 @@ const GigCard = () => {
             <span className="text-sm ml-1 opacity-70">Budget</span>
           </div>
         </div>
-        <button className="bg-royal-blue text-bone px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200">
+        <button className="bg-royal-blue text-bone px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200 cursor-pointer">
           View Details
         </button>
       </div>

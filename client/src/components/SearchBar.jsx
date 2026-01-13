@@ -27,7 +27,7 @@ const SearchBar = () => {
         </div>
 
         {/* Filter Button */}
-        <button className="bg-royal-blue text-bone px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200 flex items-center justify-center space-x-2">
+        <button className="bg-royal-blue text-bone px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer">
           <svg
             className="w-5 h-5"
             fill="none"
@@ -45,7 +45,7 @@ const SearchBar = () => {
         </button>
 
         {/* Search Button */}
-        <button className="bg-powder-blue text-royal-blue px-8 py-3 rounded-lg font-semibold hover:bg-bone transition-all duration-200">
+        <button className="bg-powder-blue text-royal-blue px-8 py-3 rounded-lg font-semibold hover:bg-bone transition-all duration-200 cursor-pointer">
           Search
         </button>
       </div>

@@ -120,7 +120,7 @@ const GigDetails = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-royal-blue text-bone py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="w-full bg-royal-blue text-bone py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl cursor-pointer"
               >
                 Submit Bid
               </button>

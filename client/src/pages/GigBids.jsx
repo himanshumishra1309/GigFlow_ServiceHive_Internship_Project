@@ -54,16 +54,16 @@ const GigBids = () => {
           {/* Filter and Sort */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-4">
-              <button className="px-4 py-2 bg-royal-blue text-bone rounded-lg font-semibold">
+              <button className="px-4 py-2 bg-royal-blue text-bone rounded-lg font-semibold cursor-pointer">
                 All Bids (5)
               </button>
-              <button className="px-4 py-2 text-royal-blue hover:bg-powder-blue rounded-lg transition-colors">
+              <button className="px-4 py-2 text-royal-blue hover:bg-powder-blue rounded-lg transition-colors cursor-pointer">
                 Pending (3)
               </button>
-              <button className="px-4 py-2 text-royal-blue hover:bg-powder-blue rounded-lg transition-colors">
+              <button className="px-4 py-2 text-royal-blue hover:bg-powder-blue rounded-lg transition-colors cursor-pointer">
                 Hired (1)
               </button>
-              <button className="px-4 py-2 text-royal-blue hover:bg-powder-blue rounded-lg transition-colors">
+              <button className="px-4 py-2 text-royal-blue hover:bg-powder-blue rounded-lg transition-colors cursor-pointer">
                 Rejected (1)
               </button>
             </div>

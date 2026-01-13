@@ -46,10 +46,10 @@ const BidCard = () => {
 
       {/* Footer - Actions (Only visible to gig owner) */}
       <div className="flex items-center space-x-3 pt-4 border-t-2 border-powder-blue">
-        <button className="flex-1 bg-royal-blue text-bone py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all duration-200">
+        <button className="flex-1 bg-royal-blue text-bone py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all duration-200 cursor-pointer">
           Hire Freelancer
         </button>
-        <button className="flex-1 border-2 border-royal-blue text-royal-blue py-3 rounded-lg font-bold hover:bg-powder-blue transition-all duration-200">
+        <button className="flex-1 border-2 border-royal-blue text-royal-blue py-3 rounded-lg font-bold hover:bg-powder-blue transition-all duration-200 cursor-pointer">
           View Profile
         </button>
       </div>

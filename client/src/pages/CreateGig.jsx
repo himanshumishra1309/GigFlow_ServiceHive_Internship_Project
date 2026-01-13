@@ -104,14 +104,14 @@ const CreateGig = () => {
               <div className="flex flex-col sm:flex-row gap-4 pt-6">
                 <button
                   type="submit"
-                  className="flex-1 bg-royal-blue text-bone py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="bg-royal-blue text-bone px-8 py-3 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all duration-200 shadow-lg cursor-pointer"
                 >
                   Post Job
                 </button>
                 <a href="/gigs" className="flex-1">
                   <button
                     type="button"
-                    className="w-full border-2 border-royal-blue text-royal-blue py-4 rounded-lg font-bold text-lg hover:bg-powder-blue transition-all duration-200"
+                    className="border-2 border-powder-blue text-royal-blue px-8 py-3 rounded-lg font-bold text-lg hover:bg-powder-blue transition-all duration-200 cursor-pointer"
                   >
                     Cancel
                   </button>

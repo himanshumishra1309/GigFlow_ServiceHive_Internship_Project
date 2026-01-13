@@ -1,6 +1,6 @@
 import './App.css'
 import Layout from './Layout'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -10,6 +10,12 @@ import CreateGig from './pages/CreateGig'
 import MyGigs from './pages/MyGigs'
 import GigBids from './pages/GigBids'
 import MyBids from './pages/MyBids'
+import useAuth from './context/authContext'
+
+const ProtectedRoute = ({children}) => {
+  const {isLoggedIn} = useAuth();
+  return isLoggedIn ? children : <Navigate to="/login"/>;
+}
 
 const router = createBrowserRouter([
   {
@@ -38,19 +44,19 @@ const router = createBrowserRouter([
       },
       {
         path: "create-gig",
-        element: <CreateGig/>
+        element: <ProtectedRoute><CreateGig/></ProtectedRoute>
       },
       {
         path: "my-gigs",
-        element: <MyGigs/>
+        element: <ProtectedRoute><MyGigs/></ProtectedRoute>
       },
       {
         path: "gigs/:id/bids",
-        element: <GigBids/>
+        element: <ProtectedRoute><GigBids/></ProtectedRoute>
       },
       {
         path: "my-bids",
-        element: <MyBids/>
+        element: <ProtectedRoute><MyBids/></ProtectedRoute>
       }
     ]
   }
@@ -58,9 +64,7 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <>
-      <RouterProvider router={router}/>
-    </>
+    <RouterProvider router={router}/>
   )
 }
 

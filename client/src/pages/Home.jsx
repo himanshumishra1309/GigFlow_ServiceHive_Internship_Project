@@ -16,12 +16,12 @@ const Home = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <a href="/gigs">
-                  <button className="px-8 py-4 bg-bone text-royal-blue rounded-lg font-bold text-lg hover:bg-powder-blue transition-all duration-200 shadow-xl">
+                  <button className="px-8 py-4 bg-bone text-royal-blue rounded-lg font-bold text-lg hover:bg-powder-blue transition-all duration-200 shadow-xl cursor-pointer">
                     Browse Gigs
                   </button>
                 </a>
                 <a href="/create-gig">
-                  <button className="px-8 py-4 bg-powder-blue text-royal-blue rounded-lg font-bold text-lg hover:bg-bone transition-all duration-200 shadow-xl">
+                  <button className="px-8 py-4 bg-powder-blue text-royal-blue rounded-lg font-bold text-lg hover:bg-bone transition-all duration-200 shadow-xl cursor-pointer">
                     Post a Job
                   </button>
                 </a>
@@ -119,12 +119,12 @@ const Home = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/register">
-              <button className="px-10 py-4 bg-bone text-royal-blue rounded-lg font-bold text-lg hover:bg-powder-blue transition-all duration-200 shadow-xl">
+              <button className="px-10 py-4 bg-bone text-royal-blue rounded-lg font-bold text-lg hover:bg-powder-blue transition-all duration-200 shadow-xl cursor-pointer">
                 Sign Up Free
               </button>
             </a>
             <a href="/gigs">
-              <button className="px-10 py-4 border-2 border-bone text-bone rounded-lg font-bold text-lg hover:bg-bone hover:text-royal-blue transition-all duration-200">
+              <button className="px-10 py-4 border-2 border-bone text-bone rounded-lg font-bold text-lg hover:bg-bone hover:text-royal-blue transition-all duration-200 cursor-pointer">
                 Explore Gigs
               </button>
             </a>

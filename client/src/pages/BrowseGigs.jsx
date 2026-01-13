@@ -53,16 +53,16 @@ const BrowseGigs = () => {
             <button className="px-4 py-2 border-2 border-powder-blue rounded-lg text-royal-blue hover:bg-powder-blue transition-all duration-200">
               Previous
             </button>
-            <button className="px-4 py-2 bg-royal-blue text-bone rounded-lg font-semibold">
+            <button className="px-4 py-2 bg-royal-blue text-bone rounded-lg font-semibold cursor-pointer">
               1
             </button>
-            <button className="px-4 py-2 border-2 border-powder-blue rounded-lg text-royal-blue hover:bg-powder-blue transition-all duration-200">
+            <button className="px-4 py-2 border-2 border-powder-blue rounded-lg text-royal-blue hover:bg-powder-blue transition-all duration-200 cursor-pointer">
               2
             </button>
-            <button className="px-4 py-2 border-2 border-powder-blue rounded-lg text-royal-blue hover:bg-powder-blue transition-all duration-200">
+            <button className="px-4 py-2 border-2 border-powder-blue rounded-lg text-royal-blue hover:bg-powder-blue transition-all duration-200 cursor-pointer">
               3
             </button>
-            <button className="px-4 py-2 border-2 border-powder-blue rounded-lg text-royal-blue hover:bg-powder-blue transition-all duration-200">
+            <button className="px-4 py-2 border-2 border-powder-blue rounded-lg text-royal-blue hover:bg-powder-blue transition-all duration-200 cursor-pointer">
               Next
             </button>
           </div>

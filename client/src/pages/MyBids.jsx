@@ -16,16 +16,16 @@ const MyBids = () => {
         <div className="max-w-7xl mx-auto">
           {/* Tabs */}
           <div className="flex space-x-4 mb-8 border-b-2 border-powder-blue">
-            <button className="px-6 py-3 text-royal-blue font-bold border-b-4 border-royal-blue -mb-0.5">
+            <button className="px-6 py-3 text-royal-blue font-bold border-b-4 border-royal-blue -mb-0.5 cursor-pointer">
               All Bids (12)
             </button>
-            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity">
+            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
               Pending (8)
             </button>
-            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity">
+            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
               Hired (3)
             </button>
-            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity">
+            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
               Rejected (1)
             </button>
           </div>
@@ -148,7 +148,7 @@ const MyBids = () => {
                   <strong>Your Proposal:</strong> With expertise in technical and on-page SEO, I can help improve...
                 </p>
                 <a href="/gigs/125">
-                  <button className="w-full border-2 border-royal-blue text-royal-blue py-3 rounded-lg font-semibold hover:bg-powder-blue transition-all duration-200">
+                  <button className="w-full border-2 border-royal-blue text-royal-blue py-3 rounded-lg font-semibold hover:bg-powder-blue transition-all duration-200 cursor-pointer">
                     View Project Details
                   </button>
                 </a>
@@ -252,7 +252,7 @@ const MyBids = () => {
               Start bidding on projects that match your skills and expertise
             </p>
             <a href="/gigs">
-              <button className="bg-royal-blue text-bone px-8 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all duration-200">
+              <button className="bg-royal-blue text-bone px-8 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all duration-200 cursor-pointer">
                 Browse Available Gigs
               </button>
             </a>
