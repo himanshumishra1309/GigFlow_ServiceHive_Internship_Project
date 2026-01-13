@@ -45,6 +45,7 @@ const createGig = asyncHandler(async (req, res)=>{
   )
 });
 
+
 const updateGig = asyncHandler(async (req, res)=>{
   const {title, description, budget, slug} = req.body;
   const gigId = req.params._id;
@@ -81,7 +82,7 @@ const updateGig = asyncHandler(async (req, res)=>{
   return res.status(200).json(
     new ApiResponse(
       200,
-      updateGig,
+      updatedGig,
       "Gig updated Successfully"
     )
   );
@@ -89,7 +90,15 @@ const updateGig = asyncHandler(async (req, res)=>{
 
 
 const getAllGig = asyncHandler(async (req, res)=>{
-  const allGigs = await Gig.find({});
+  const {search} = req.query;
+  
+  let filter = {status: "open"};
+
+  if(search){
+    filter.title = {$regex: search, $options: 'i'};
+  }
+
+  const allGigs = await Gig.find(filter).populate("ownerId", "name email").sort({createdAt: -1});
 
   if(!allGigs){
     throw new ApiError(500, "Error fetching gig");
@@ -97,9 +106,14 @@ const getAllGig = asyncHandler(async (req, res)=>{
 
   return res.status(200).json(
     new ApiResponse(
-      200,
-      allGigs,
-      "All gigs fetched successfully"
+      200, 
+      {
+        count: allGigs.length,
+        gigs: allGigs
+      }, 
+      search 
+        ? `Found ${allGigs.length} gigs matching "${search}"`
+        : "All gigs fetched successfully"
     )
   );
 });
@@ -234,3 +248,5 @@ const acceptGigFreelancer = asyncHandler(async (req, res)=>{
     session.endSession();
   }
 });
+
+export {createGig, updateGig, getAllGig, getGigById, deleteGig, acceptGigFreelancer}

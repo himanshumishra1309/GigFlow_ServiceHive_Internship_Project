@@ -17,4 +17,12 @@ app.get('/', (req, res)=>{
     res.json("Healthy Server");
 })
 
+import userRoute from './route/user.route.js'
+import gigRoute from './route/gig.route.js'
+import bidRoute from './route/bid.route.js'
+
+app.use('/api/auth', userRoute);
+app.use('/api/gigs', gigRoute);
+app.use('/api/bids', bidRoute);
+
 export {app}
