@@ -1,11 +1,6 @@
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
-
 const Home = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-royal-blue to-royal-blue/90 text-bone py-20 px-6">
         <div className="max-w-7xl mx-auto">
@@ -160,8 +155,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

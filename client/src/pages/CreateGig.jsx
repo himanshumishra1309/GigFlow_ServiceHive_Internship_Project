@@ -1,11 +1,6 @@
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
-
 const CreateGig = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       {/* Page Header */}
       <section className="bg-gradient-to-r from-royal-blue to-royal-blue/90 py-12 px-6">
         <div className="max-w-4xl mx-auto">
@@ -126,8 +121,6 @@ const CreateGig = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

@@ -1,11 +1,6 @@
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
-
 const GigDetails = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       {/* Main Content */}
       <section className="flex-1 bg-bone py-12 px-6">
         <div className="max-w-5xl mx-auto">
@@ -148,8 +143,6 @@ const GigDetails = () => {
           </div> */}
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

@@ -1,12 +1,8 @@
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
 import BidCard from '../components/BidCard';
 
 const GigBids = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       {/* Page Header */}
       <section className="bg-gradient-to-r from-royal-blue to-royal-blue/90 py-12 px-6">
         <div className="max-w-7xl mx-auto">
@@ -149,8 +145,6 @@ const GigBids = () => {
           </div> */}
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

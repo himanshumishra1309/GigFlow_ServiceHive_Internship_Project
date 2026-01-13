@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
-* {
+@theme {
+  --color-royal-blue: #162660;
+  --color-powder-blue: #D0E6FD;
+  --color-bone: #F1E4D1;
+}
+
+/* * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -13,4 +19,4 @@ body {
   background-color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
+} */
