@@ -79,16 +79,90 @@ git clone <your-repo-url>
 cd GigFlow_ServiceHive_Internship_Project
 ```
 
-2. **Setup Backend**
+2. **Setup MongoDB Database**
+
+MongoDB will store all your application data. Follow these steps:
+
+#### 2.1: Create MongoDB Account & Cluster
+
+1. Go to [https://www.mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
+2. Click **"Try Free"** and create an account (or sign in if you have one)
+3. Once logged in, click **"Create"** to start a new project
+
+#### 2.2: Create a New Project
+
+1. Enter your **Project Name** (e.g., "GigFlow")
+2. Click **"Next"**
+3. Click **"Create Project"**
+
+#### 2.3: Create a Database Cluster
+
+1. Click **"Create"**
+2. Choose the **FREE** tier (M0 Sandbox)
+3. Select your preferred **cloud provider** and **region** (choose one closest to you)
+4. Click **"Create Deployment"**
+
+#### 2.4: Create Database User
+
+A popup will appear asking you to create a database user:
+
+1. Enter a **Username**
+2. Click **"Autogenerate Secure Password"** or create your own
+3. **IMPORTANT**: Copy and save this password somewhere safe—you'll need it shortly!
+4. Click **"Create Database User"**
+
+#### 2.5: Get Your MongoDB Connection String
+
+1. Click **"Choose a connection method"**
+2. Select **"Compass"** (or "Drivers" works too)
+3. You'll see a connection string that looks like:
+   ```
+   mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net
+   ```
+4. **Copy this entire URL**
+
+#### 2.6: Configure Network Access
+
+Before using your database, you need to allow connections from any IP address:
+
+1. On the left sidebar, under **"Security"**, click **"Network Access"**
+2. Click **"Add IP Address"** or **"Edit"** on existing entry
+3. In the dialog box, click **"Allow Access from Anywhere"** or manually enter:
+   - **IP Address**: `0.0.0.0/0`
+4. Click **"Confirm"**
+
+This configuration allows your application to connect to MongoDB from any location without IP whitelisting restrictions. Perfect for development and testing!
+
+✅ **Network access configured!**
+
+3. **Setup Backend**
 ```bash
 cd server
 npm install
 cp .env.example .env
-# Edit .env with your MongoDB URI and secrets
+```
+
+Now open `server/.env` file and update the `MONGODB_URI`:
+
+```env
+MONGODB_URI=mongodb+srv://<username>:<db_password>@cluster0.xxxxx.mongodb.net
+```
+
+- Replace `<username>` with your database username
+- Replace `<db_password>` with the password you copied earlier
+
+**Example:**
+```env
+MONGODB_URI=mongodb+srv://admin:MySecurePass123@cluster0.abc123.mongodb.net
+```
+
+Also configure other environment variables in `.env` file. Then start the server:
+
+```bash
 npm run dev
 ```
 
-3. **Setup Frontend**
+4. **Setup Frontend**
 ```bash
 cd client
 npm install
