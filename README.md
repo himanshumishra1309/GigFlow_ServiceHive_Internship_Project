@@ -156,7 +156,15 @@ MONGODB_URI=mongodb+srv://<username>:<db_password>@cluster0.xxxxx.mongodb.net
 MONGODB_URI=mongodb+srv://admin:MySecurePass123@cluster0.abc123.mongodb.net
 ```
 
-Also configure other environment variables in `.env` file. Then start the server:
+Also configure other environment variables in `.env` file:
+
+```env
+CORS_ORIGIN=http://localhost:5173
+```
+
+**Note**: Update `CORS_ORIGIN` to match the URL where your frontend is running. If your frontend runs on a different port (e.g., `http://localhost:3000`), change it accordingly.
+
+Then start the server:
 
 ```bash
 npm run dev
@@ -306,6 +314,10 @@ Access the deployed app and test:
 
 Himanshu Mishra
 
+## � Acknowledgments
+
+This project was developed as part of a Full Stack Development Internship Assignment provided by **ServiceHive**. I would like to express my sincere gratitude to ServiceHive for this wonderful opportunity to showcase my skills and learn through this comprehensive project.
+
 ## 📄 License
 
-This project is part of an internship assignment.
+This project is licensed under the MIT License.
