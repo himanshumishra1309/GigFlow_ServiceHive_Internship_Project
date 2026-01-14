@@ -11,6 +11,7 @@ import MyGigs from './pages/MyGigs'
 import GigBids from './pages/GigBids'
 import MyBids from './pages/MyBids'
 import useAuth from './context/authContext'
+import ScrollToTop from './components/ScrollToTop'
 
 const ProtectedRoute = ({children}) => {
   const {isLoggedIn} = useAuth();
@@ -39,7 +40,7 @@ const router = createBrowserRouter([
         element: <BrowseGigs/>
       },
       {
-        path: "gigs/:id",
+        path: "gigs/:gigId",
         element: <GigDetails/>
       },
       {
@@ -51,7 +52,7 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><MyGigs/></ProtectedRoute>
       },
       {
-        path: "gigs/:id/bids",
+        path: "gigs/:gigId/bids",
         element: <ProtectedRoute><GigBids/></ProtectedRoute>
       },
       {

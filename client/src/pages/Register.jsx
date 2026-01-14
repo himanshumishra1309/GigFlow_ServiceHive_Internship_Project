@@ -79,10 +79,10 @@ const Register = () => {
       setError("Passwords do not match");
       return;
     }
+
     try {
       setIsLoading(true);
       setError("");
-      // Registration logic here
 
       const response = await register(
         formData.name,
@@ -92,8 +92,6 @@ const Register = () => {
         formData.password
       );
 
-      console.log("Form submitted:", formData);
-      console.log("Registration response:", response);
       navigate("/login");
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");

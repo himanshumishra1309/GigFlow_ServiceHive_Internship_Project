@@ -26,6 +26,24 @@ const registerUser = asyncHandler(async (req, res)=> {
     throw new ApiError(400, "All the fields are required");
   }
 
+  const isEmailInUse = await User.findOne({email: email});
+
+  if(isEmailInUse){
+    throw new ApiError(400, "Email already in use");
+  }
+
+  const isUsernameInUse = await User.findOne({username: username});
+
+  if(isUsernameInUse){
+    throw new ApiError(400, "Username already in use");
+  }
+  
+  const isContactInUse = await User.findOne({contact_no: contact_no});
+
+  if(isContactInUse){
+    throw new ApiError(400, "Contact already in use");
+  }
+
   const user = await User.create({
     name,
     email,
@@ -100,7 +118,7 @@ const loginUser = asyncHandler(async (req, res) => {
 const logoutUser = asyncHandler(async (req, res) => {
   const {userId} = req.user._id;
 
-  const loggedOutUser = await User.findByIdAndUpdate(
+  await User.findByIdAndUpdate(
     userId,
     {
       $unset: {
@@ -111,10 +129,6 @@ const logoutUser = asyncHandler(async (req, res) => {
       new: true
     }
   )
-
-  if(!loggedOutUser){
-    throw new ApiError(500, "Unable to log out user");
-  }
 
   const options = {
     httpOnly: true,

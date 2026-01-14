@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../../context/authContext";
 import { useState } from "react";
+import { logout as logoutService } from "../../service/service";
 
 const Navbar = () => {
   const { isLoggedIn, user, logout } = useAuth();
@@ -8,10 +9,17 @@ const Navbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    setShowDropdown(false);
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await logoutService();
+      logout();
+      setShowDropdown(false);
+      navigate('/');
+    } catch (err) {
+      console.error("Logout error:", err);
+      logout();
+      navigate('/');
+    }
   };
 
   const getInitials = (name) => {

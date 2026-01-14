@@ -18,10 +18,10 @@ const createGig = asyncHandler(async (req, res)=>{
     throw new ApiError(500, "Error getting user Id");
   }
 
-  const isSlugPresent = await Gig.find({slug: slug});
+  const isSlugPresent = await Gig.findOne({slug: slug});
 
   if(isSlugPresent){
-    throw new ApiError(400, "This slug is already in use, please create a new slug");
+    throw new ApiError(400, "Slug already in use");
   }
 
   const createdGig = await Gig.create({
@@ -58,10 +58,10 @@ const updateGig = asyncHandler(async (req, res)=>{
     throw new ApiError(400, "All the fields are required");
   }
 
-  const isSlugPresent = await Gig.find({slug: slug});
+  const isSlugPresent = await Gig.findOne({slug: slug, _id: {$ne: gigId}});
 
   if(isSlugPresent){
-    throw new ApiError(400, "This slug is already in use, please create a new slug");
+    throw new ApiError(400, "Slug already in use");
   }
 
   const updatedGig = await Gig.findByIdAndUpdate(
@@ -126,7 +126,7 @@ const getGigById = asyncHandler(async (req, res)=>{
     throw new ApiError(404, "Gig id was not received");
   }
 
-  const foundGig = await Gig.findById(gigId);
+  const foundGig = await Gig.findById(gigId).populate("ownerId", "name username email");
 
   if(!foundGig){
     throw new ApiError(404, "Gig with the provided id was not found");

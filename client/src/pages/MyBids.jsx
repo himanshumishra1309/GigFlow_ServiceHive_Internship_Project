@@ -1,7 +1,137 @@
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { getUserBids, deleteBid, updateBid } from "../service/service";
+import LoadingSpinner from "../components/LoadingSpinner";
+import ErrorMessage from "../components/ErrorMessage";
+
 const MyBids = () => {
+  const [bids, setBids] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  const [editingBid, setEditingBid] = useState(null);
+  const [editFormData, setEditFormData] = useState({ message: "", proposedPrice: "" });
+  const [editError, setEditError] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
+
+  useEffect(() => {
+    fetchUserBids();
+  }, []);
+
+  const fetchUserBids = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await getUserBids();
+      setBids(response.data);
+    } catch (err) {
+      console.error("Error fetching user bids:", err);
+      setError(err.response?.data?.message || "Failed to load bids");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteBid = async (bidId) => {
+    if (!window.confirm("Are you sure you want to delete this bid?")) {
+      return;
+    }
+
+    try {
+      await deleteBid(bidId);
+      setBids(bids.filter((bid) => bid._id !== bidId));
+    } catch (err) {
+      console.error("Error deleting bid:", err);
+      alert(err.response?.data?.message || "Failed to delete bid");
+    }
+  };
+
+  const handleEditBid = (bid) => {
+    setEditingBid(bid._id);
+    setEditFormData({
+      message: bid.message,
+      proposedPrice: bid.proposedPrice,
+    });
+    setEditError("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingBid(null);
+    setEditFormData({ message: "", proposedPrice: "" });
+    setEditError("");
+  };
+
+  const handleUpdateBid = async (bidId, gigId) => {
+    if (!editFormData.message || !editFormData.proposedPrice) {
+      setEditError("Please fill all fields");
+      return;
+    }
+
+    if (editFormData.message.trim().length < 20) {
+      setEditError("Message must be at least 20 characters long");
+      return;
+    }
+
+    if (Number(editFormData.proposedPrice) <= 0) {
+      setEditError("Proposed price must be greater than 0");
+      return;
+    }
+
+    try {
+      setEditLoading(true);
+      setEditError("");
+      const response = await updateBid(bidId, gigId, editFormData.message, Number(editFormData.proposedPrice));
+      setBids(bids.map((bid) => (bid._id === bidId ? response.data : bid)));
+      setEditingBid(null);
+      setEditFormData({ message: "", proposedPrice: "" });
+    } catch (err) {
+      console.error("Error updating bid:", err);
+      setEditError(err.response?.data?.message || "Failed to update bid");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const getFilteredBids = () => {
+    if (filter === "all") return bids;
+    return bids.filter((bid) => bid.status === filter);
+  };
+
+  const getBidCount = (status) => {
+    if (status === "all") return bids.length;
+    return bids.filter((bid) => bid.status === status).length;
+  };
+
+  const getStatusDisplay = (status) => {
+    if (status === "pending") return "Pending";
+    if (status === "hired") return "✓ Hired";
+    if (status === "rejected") return "Rejected";
+    return status;
+  };
+
+  const getStatusStyle = (status) => {
+    if (status === "hired") return "bg-green-100 text-green-700";
+    if (status === "rejected") return "bg-red-100 text-red-700";
+    return "bg-bone text-royal-blue";
+  };
+
+  const getBorderStyle = (status) => {
+    if (status === "hired") return "border-green-200 hover:border-green-400";
+    if (status === "rejected") return "border-red-200 hover:border-red-300 opacity-75";
+    return "border-powder-blue hover:border-royal-blue";
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bone">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Page Header */}
       <section className="bg-gradient-to-r from-royal-blue to-royal-blue/90 py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold text-bone mb-4">My Bids</h1>
@@ -11,252 +141,199 @@ const MyBids = () => {
         </div>
       </section>
 
-      {/* Main Content */}
       <section className="flex-1 bg-bone py-12 px-6">
         <div className="max-w-7xl mx-auto">
-          {/* Tabs */}
+          {error && (
+            <div className="mb-6">
+              <ErrorMessage message={error} />
+            </div>
+          )}
+
           <div className="flex space-x-4 mb-8 border-b-2 border-powder-blue">
-            <button className="px-6 py-3 text-royal-blue font-bold border-b-4 border-royal-blue -mb-0.5 cursor-pointer">
-              All Bids (12)
+            <button
+              onClick={() => setFilter("all")}
+              className={`px-6 py-3 font-bold transition-opacity ${
+                filter === "all"
+                  ? "text-royal-blue border-b-4 border-royal-blue -mb-0.5"
+                  : "text-royal-blue opacity-70 hover:opacity-100"
+              }`}
+            >
+              All Bids ({getBidCount("all")})
             </button>
-            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
-              Pending (8)
+            <button
+              onClick={() => setFilter("pending")}
+              className={`px-6 py-3 font-bold transition-opacity ${
+                filter === "pending"
+                  ? "text-royal-blue border-b-4 border-royal-blue -mb-0.5"
+                  : "text-royal-blue opacity-70 hover:opacity-100"
+              }`}
+            >
+              Pending ({getBidCount("pending")})
             </button>
-            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
-              Hired (3)
+            <button
+              onClick={() => setFilter("hired")}
+              className={`px-6 py-3 font-bold transition-opacity ${
+                filter === "hired"
+                  ? "text-royal-blue border-b-4 border-royal-blue -mb-0.5"
+                  : "text-royal-blue opacity-70 hover:opacity-100"
+              }`}
+            >
+              Hired ({getBidCount("hired")})
             </button>
-            <button className="px-6 py-3 text-royal-blue opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
-              Rejected (1)
+            <button
+              onClick={() => setFilter("rejected")}
+              className={`px-6 py-3 font-bold transition-opacity ${
+                filter === "rejected"
+                  ? "text-royal-blue border-b-4 border-royal-blue -mb-0.5"
+                  : "text-royal-blue opacity-70 hover:opacity-100"
+              }`}
+            >
+              Rejected ({getBidCount("rejected")})
             </button>
           </div>
 
-          {/* Bid Items */}
-          <div className="space-y-6">
-            {/* Bid Item 1 - Hired */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-green-200 hover:border-green-400 transition-all duration-300">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-bold">
-                      ✓ Hired
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-royal-blue mb-2">
-                    Full Stack Web Application Development
-                  </h3>
-                  <p className="text-royal-blue opacity-70 mb-3">
-                    Client: John Smith • Bid submitted 3 days ago
-                  </p>
-                  <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-3">
-                    <p className="text-green-700 font-bold mb-2">🎉 Congratulations! You've been hired!</p>
-                    <p className="text-green-600 text-sm">
-                      The client has selected you for this project. Get started and deliver amazing work!
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right ml-6">
-                  <p className="text-3xl font-bold text-royal-blue mb-1">$4,500</p>
-                  <p className="text-sm text-royal-blue opacity-70">Your Bid</p>
-                  <p className="text-xs text-green-600 mt-2">vs $5,000 budget</p>
-                </div>
+          {getFilteredBids().length === 0 ? (
+            <div className="text-center py-20">
+              <div className="w-24 h-24 bg-powder-blue rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-12 h-12 text-royal-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
               </div>
-              <div className="pt-4 border-t-2 border-powder-blue">
-                <p className="text-royal-blue text-sm mb-3">
-                  <strong>Your Proposal:</strong> I have over 5 years of experience in full stack development...
-                </p>
-                <div className="flex items-center space-x-3">
-                  <a href="/gigs/123" className="flex-1">
-                    <button className="w-full bg-royal-blue text-bone py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200">
-                      View Project Details
-                    </button>
-                  </a>
-                  <button className="flex-1 border-2 border-royal-blue text-royal-blue py-3 rounded-lg font-semibold hover:bg-powder-blue transition-all duration-200">
-                    Message Client
-                  </button>
-                </div>
-              </div>
+              <h3 className="text-2xl font-bold text-royal-blue mb-3">No bids found</h3>
+              <p className="text-royal-blue opacity-70 mb-6">
+                Start bidding on projects that match your skills and expertise
+              </p>
+              <Link to="/gigs">
+                <button className="bg-royal-blue text-bone px-8 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all duration-200">
+                  Browse Available Gigs
+                </button>
+              </Link>
             </div>
-
-            {/* Bid Item 2 - Pending */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-powder-blue hover:border-royal-blue transition-all duration-300">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <span className="bg-bone text-royal-blue px-4 py-2 rounded-full text-sm font-bold">
-                      Pending
-                    </span>
+          ) : (
+            <div className="space-y-6">
+              {getFilteredBids().map((bid) => (
+                <div key={bid._id} className={`bg-white rounded-xl shadow-lg p-6 border-2 ${getBorderStyle(bid.status)} transition-all duration-300`}>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <span className={`px-4 py-2 rounded-full text-sm font-bold ${getStatusStyle(bid.status)}`}>
+                          {getStatusDisplay(bid.status)}
+                        </span>
+                      </div>
+                      <h3 className="text-2xl font-bold text-royal-blue mb-2">
+                        {bid.gigId.title}
+                      </h3>
+                      <p className="text-royal-blue opacity-70 mb-3">
+                        Client: {bid.gigId.owner.name} • Bid submitted {new Date(bid.createdAt).toLocaleDateString()}
+                      </p>
+                      {bid.status === "hired" && (
+                        <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-3">
+                          <p className="text-green-700 font-bold mb-2">🎉 Congratulations! You've been hired!</p>
+                          <p className="text-green-600 text-sm">
+                            The client has selected you for this project. Get started and deliver amazing work!
+                          </p>
+                        </div>
+                      )}
+                      {bid.status === "rejected" && (
+                        <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 mb-3">
+                          <p className="text-red-600 text-sm">
+                            The client has selected another freelancer for this project.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right ml-6">
+                      <p className="text-3xl font-bold text-royal-blue mb-1">${bid.proposedPrice}</p>
+                      <p className="text-sm text-royal-blue opacity-70">Your Bid</p>
+                      <p className={`text-xs mt-2 ${bid.status === "hired" ? "text-green-600" : "text-royal-blue opacity-60"}`}>
+                        vs ${bid.gigId.budget} budget
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-royal-blue mb-2">
-                    Mobile App UI/UX Design
-                  </h3>
-                  <p className="text-royal-blue opacity-70 mb-3">
-                    Client: Sarah Johnson • Bid submitted 1 day ago
-                  </p>
+                  
+                  {editingBid === bid._id ? (
+                    <div className="pt-4 border-t-2 border-powder-blue">
+                      {editError && (
+                        <div className="mb-4">
+                          <ErrorMessage message={editError} />
+                        </div>
+                      )}
+                      {editLoading ? (
+                        <LoadingSpinner />
+                      ) : (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-royal-blue font-semibold mb-2">Proposed Price</label>
+                            <div className="relative">
+                              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-royal-blue font-bold">$</span>
+                              <input
+                                type="number"
+                                value={editFormData.proposedPrice}
+                                onChange={(e) => setEditFormData({ ...editFormData, proposedPrice: e.target.value })}
+                                className="w-full pl-10 pr-4 py-2 border-2 border-powder-blue rounded-lg focus:border-royal-blue focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-royal-blue font-semibold mb-2">Cover Letter</label>
+                            <textarea
+                              rows="4"
+                              value={editFormData.message}
+                              onChange={(e) => setEditFormData({ ...editFormData, message: e.target.value })}
+                              className="w-full px-4 py-2 border-2 border-powder-blue rounded-lg focus:border-royal-blue focus:outline-none resize-none"
+                            ></textarea>
+                          </div>
+                          <div className="flex space-x-3">
+                            <button
+                              onClick={handleCancelEdit}
+                              className="flex-1 border-2 border-royal-blue text-royal-blue py-2 rounded-lg font-semibold hover:bg-powder-blue transition-all duration-200"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleUpdateBid(bid._id, bid.gigId._id)}
+                              className="flex-1 bg-royal-blue text-bone py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200"
+                            >
+                              Save Changes
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="pt-4 border-t-2 border-powder-blue">
+                      <p className="text-royal-blue text-sm mb-3">
+                        <strong>Your Proposal:</strong> {bid.message.length > 100 ? bid.message.substring(0, 100) + "..." : bid.message}
+                      </p>
+                      <div className="flex items-center space-x-3">
+                        <Link to={`/gigs/${bid.gigId._id}`} className="flex-1">
+                          <button className="w-full bg-royal-blue text-bone py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200">
+                            View Project Details
+                          </button>
+                        </Link>
+                        {bid.status === "pending" && (
+                          <>
+                            <button
+                              onClick={() => handleEditBid(bid)}
+                              className="flex-1 border-2 border-royal-blue text-royal-blue py-3 rounded-lg font-semibold hover:bg-powder-blue transition-all duration-200"
+                            >
+                              Edit Bid
+                            </button>
+                            <button
+                              onClick={() => handleDeleteBid(bid._id)}
+                              className="flex-1 border-2 border-red-500 text-red-500 py-3 rounded-lg font-semibold hover:bg-red-50 transition-all duration-200"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="text-right ml-6">
-                  <p className="text-3xl font-bold text-royal-blue mb-1">$2,800</p>
-                  <p className="text-sm text-royal-blue opacity-70">Your Bid</p>
-                  <p className="text-xs text-royal-blue opacity-60 mt-2">vs $3,000 budget</p>
-                </div>
-              </div>
-              <div className="pt-4 border-t-2 border-powder-blue">
-                <p className="text-royal-blue text-sm mb-3">
-                  <strong>Your Proposal:</strong> As a UI/UX designer with 7+ years of experience, I specialize in creating intuitive...
-                </p>
-                <div className="flex items-center space-x-3">
-                  <a href="/gigs/124" className="flex-1">
-                    <button className="w-full bg-royal-blue text-bone py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200">
-                      View Project Details
-                    </button>
-                  </a>
-                  <button className="flex-1 border-2 border-royal-blue text-royal-blue py-3 rounded-lg font-semibold hover:bg-powder-blue transition-all duration-200">
-                    Edit Bid
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
-
-            {/* Bid Item 3 - Rejected */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-red-200 hover:border-red-300 transition-all duration-300 opacity-75">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <span className="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-bold">
-                      Rejected
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-royal-blue mb-2">
-                    SEO Optimization for E-commerce
-                  </h3>
-                  <p className="text-royal-blue opacity-70 mb-3">
-                    Client: Mike Davis • Bid submitted 1 week ago
-                  </p>
-                  <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 mb-3">
-                    <p className="text-red-600 text-sm">
-                      The client has selected another freelancer for this project.
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right ml-6">
-                  <p className="text-3xl font-bold text-royal-blue mb-1">$1,200</p>
-                  <p className="text-sm text-royal-blue opacity-70">Your Bid</p>
-                  <p className="text-xs text-royal-blue opacity-60 mt-2">vs $1,500 budget</p>
-                </div>
-              </div>
-              <div className="pt-4 border-t-2 border-powder-blue">
-                <p className="text-royal-blue text-sm mb-3">
-                  <strong>Your Proposal:</strong> With expertise in technical and on-page SEO, I can help improve...
-                </p>
-                <a href="/gigs/125">
-                  <button className="w-full border-2 border-royal-blue text-royal-blue py-3 rounded-lg font-semibold hover:bg-powder-blue transition-all duration-200 cursor-pointer">
-                    View Project Details
-                  </button>
-                </a>
-              </div>
-            </div>
-
-            {/* Bid Item 4 - Pending */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-powder-blue hover:border-royal-blue transition-all duration-300">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <span className="bg-bone text-royal-blue px-4 py-2 rounded-full text-sm font-bold">
-                      Pending
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-royal-blue mb-2">
-                    WordPress Plugin Development
-                  </h3>
-                  <p className="text-royal-blue opacity-70 mb-3">
-                    Client: Emily Chen • Bid submitted 4 hours ago
-                  </p>
-                </div>
-                <div className="text-right ml-6">
-                  <p className="text-3xl font-bold text-royal-blue mb-1">$800</p>
-                  <p className="text-sm text-royal-blue opacity-70">Your Bid</p>
-                  <p className="text-xs text-royal-blue opacity-60 mt-2">vs $1,000 budget</p>
-                </div>
-              </div>
-              <div className="pt-4 border-t-2 border-powder-blue">
-                <p className="text-royal-blue text-sm mb-3">
-                  <strong>Your Proposal:</strong> I'm a WordPress expert with 4+ years developing custom plugins...
-                </p>
-                <div className="flex items-center space-x-3">
-                  <a href="/gigs/126" className="flex-1">
-                    <button className="w-full bg-royal-blue text-bone py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200">
-                      View Project Details
-                    </button>
-                  </a>
-                  <button className="flex-1 border-2 border-royal-blue text-royal-blue py-3 rounded-lg font-semibold hover:bg-powder-blue transition-all duration-200">
-                    Edit Bid
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Bid Item 5 - Hired */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-green-200 hover:border-green-400 transition-all duration-300">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-bold">
-                      ✓ Hired
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-royal-blue mb-2">
-                    React Native Mobile App
-                  </h3>
-                  <p className="text-royal-blue opacity-70 mb-3">
-                    Client: Tom Wilson • Bid submitted 2 weeks ago
-                  </p>
-                  <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-3">
-                    <p className="text-green-700 font-bold mb-2">🎉 Congratulations! You've been hired!</p>
-                    <p className="text-green-600 text-sm">
-                      Project is in progress. Keep up the great work!
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right ml-6">
-                  <p className="text-3xl font-bold text-royal-blue mb-1">$6,500</p>
-                  <p className="text-sm text-royal-blue opacity-70">Your Bid</p>
-                  <p className="text-xs text-green-600 mt-2">vs $7,000 budget</p>
-                </div>
-              </div>
-              <div className="pt-4 border-t-2 border-powder-blue">
-                <p className="text-royal-blue text-sm mb-3">
-                  <strong>Your Proposal:</strong> Mobile app development is my specialty. With React Native expertise...
-                </p>
-                <div className="flex items-center space-x-3">
-                  <a href="/gigs/127" className="flex-1">
-                    <button className="w-full bg-royal-blue text-bone py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200">
-                      View Project Details
-                    </button>
-                  </a>
-                  <button className="flex-1 border-2 border-royal-blue text-royal-blue py-3 rounded-lg font-semibold hover:bg-powder-blue transition-all duration-200">
-                    Message Client
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Empty State (Show when no bids) */}
-          {/* <div className="text-center py-20">
-            <div className="w-24 h-24 bg-powder-blue rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-12 h-12 text-royal-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-royal-blue mb-3">No bids submitted yet</h3>
-            <p className="text-royal-blue opacity-70 mb-6">
-              Start bidding on projects that match your skills and expertise
-            </p>
-            <a href="/gigs">
-              <button className="bg-royal-blue text-bone px-8 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all duration-200 cursor-pointer">
-                Browse Available Gigs
-              </button>
-            </a>
-          </div> */}
+          )}
         </div>
       </section>
     </div>

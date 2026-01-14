@@ -10,6 +10,14 @@ const apiClient = axios.create({
   },
 });
 
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("accessToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const login = async (email, password) => {
   const response = await apiClient.post("/auth/login", { email, password });
   if (response.data.data.accessToken) {
@@ -20,6 +28,94 @@ export const login = async (email, password) => {
 };
 
 export const register = async (name, email, username, contact_no, password) => {
-  const response = await apiClient.post("/auth/register", { name, email, username, contact_no, password });
+  const response = await apiClient.post("/auth/register", {
+    name,
+    email,
+    username,
+    contact_no,
+    password,
+  });
+  return response.data;
+};
+
+export const logout = async () => {
+  const response = await apiClient.post("/auth/logout");
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("userInfo");
+  return response.data;
+};
+
+export const getAllGigs = async (search = "") => {
+  const response = await apiClient.get("/gigs", {
+    params: { search },
+  });
+  return response.data;
+};
+
+export const getGigById = async (gigId) => {
+  const response = await apiClient.get(`/gigs/${gigId}`);
+  return response.data;
+};
+
+export const createGig = async (title, description, budget, slug) => {
+  const response = await apiClient.post("/gigs", {
+    title,
+    description,
+    budget,
+    slug,
+  });
+  return response.data;
+};
+
+export const updateGig = async (gigId, title, description, budget, slug) => {
+  const response = await apiClient.put(`/gigs/${gigId}`, {
+    title,
+    description,
+    budget,
+    slug,
+  });
+  return response.data;
+};
+
+export const deleteGig = async (gigId) => {
+  const response = await apiClient.delete(`/gigs/${gigId}`);
+  return response.data;
+};
+
+export const hireFreelancer = async (gigId, bidId) => {
+  const response = await apiClient.patch(`/gigs/${gigId}/hire`, { bidId });
+  return response.data;
+};
+
+export const createBid = async (gigId, message, proposedPrice) => {
+  const response = await apiClient.post("/bids", {
+    gigId,
+    message,
+    proposedPrice,
+  });
+  return response.data;
+};
+
+export const updateBid = async (bidId, gigId, message, proposedPrice) => {
+  const response = await apiClient.put(`/bids/${bidId}`, {
+    gigId,
+    message,
+    proposedPrice,
+  });
+  return response.data;
+};
+
+export const deleteBid = async (bidId) => {
+  const response = await apiClient.delete(`/bids/${bidId}`);
+  return response.data;
+};
+
+export const getUserBids = async () => {
+  const response = await apiClient.get("/bids/user/mybids");
+  return response.data;
+};
+
+export const getGigBids = async (gigId) => {
+  const response = await apiClient.get(`/bids/${gigId}`);
   return response.data;
 };
