@@ -17,13 +17,11 @@ const io = new Server(httpServer, {
   }
 });
 
-// Store connected users (userId -> socketId)
 const connectedUsers = new Map();
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  // User authentication
   socket.on('authenticate', (userId) => {
     if (userId) {
       connectedUsers.set(userId, socket.id);
@@ -32,7 +30,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    // Remove user from connected users
     for (const [userId, socketId] of connectedUsers.entries()) {
       if (socketId === socket.id) {
         connectedUsers.delete(userId);
@@ -43,7 +40,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// Export io for use in controllers
 export { io, connectedUsers };
 
 connectDB().then(()=>{

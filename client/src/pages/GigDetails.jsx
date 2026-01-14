@@ -59,8 +59,7 @@ const GigDetails = () => {
     try {
       setBidsLoading(true);
       setBidsError("");
-      // Fetch a limited number of bids for inline display
-      const response = await getGigBids(gigId, 1, 5); // Show only first 5 bids
+      const response = await getGigBids(gigId, 1, 5);
       setBids(response.data.bids || response.data || []);
     } catch (err) {
       console.error("Error fetching bids:", err);

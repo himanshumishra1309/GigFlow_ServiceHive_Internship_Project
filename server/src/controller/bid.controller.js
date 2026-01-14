@@ -21,7 +21,6 @@ const createBid = asyncHandler(async(req, res)=>{
     throw new ApiError(404, "Freelancer Id was not received");
   }
 
-  // Check if user has already bid on this gig
   const existingBid = await Bid.findOne({ gigId, freelancerId });
   if(existingBid){
     throw new ApiError(400, "You have already placed a bid on this gig");
@@ -35,12 +34,10 @@ const createBid = asyncHandler(async(req, res)=>{
     status:"pending"
   });
 
-  // Populate the created bid for socket emission
   const populatedBid = await Bid.findById(createdBid._id)
     .populate('freelancerId', 'name username email')
     .populate('gigId', 'title ownerId');
 
-  // Emit socket event to gig owner
   if (populatedBid.gigId && populatedBid.gigId.ownerId) {
     const ownerSocketId = connectedUsers.get(populatedBid.gigId.ownerId.toString());
     if (ownerSocketId) {

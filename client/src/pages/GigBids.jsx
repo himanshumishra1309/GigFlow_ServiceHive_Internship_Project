@@ -35,12 +35,10 @@ const GigBids = () => {
     fetchGigAndBids();
   }, [gigId, isLoggedIn, currentPage]);
 
-  // Listen for real-time bid updates
   useEffect(() => {
     if (!socket) return;
 
     const handleNewBid = (data) => {
-      // Refresh bids list when new bid comes in for this gig
       if (data.bid.gigId._id === gigId) {
         fetchGigAndBids();
       }

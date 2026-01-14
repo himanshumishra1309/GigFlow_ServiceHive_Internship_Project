@@ -78,7 +78,7 @@ export const updateGig = async (gigId, title, description, budget, slug) => {
 };
 
 export const deleteGig = async (gigId) => {
-  const response = await apiClient.delete(`/gigs/${gigId}`);
+  const response = await apiClient.delete( `/gigs/${gigId}`);
   return response.data;
 };
 

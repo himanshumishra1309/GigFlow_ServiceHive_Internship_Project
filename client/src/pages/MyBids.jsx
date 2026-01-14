@@ -6,6 +6,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
 import Notification from "../components/Notification";
 import Pagination from "../components/Pagination";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const MyBids = () => {
   const [bids, setBids] = useState([]);
@@ -24,21 +25,21 @@ const MyBids = () => {
   const [editError, setEditError] = useState("");
   const [editLoading, setEditLoading] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, bidId: null, gigTitle: "" });
 
   useEffect(() => {
     fetchUserBids();
   }, []);
 
-  // Listen for real-time bid status updates
   useEffect(() => {
     if (!socket) return;
 
     const handleBidAccepted = () => {
-      fetchUserBids(); // Refresh bids when one is accepted
+      fetchUserBids();
     };
 
     const handleBidRejected = () => {
-      fetchUserBids(); // Refresh bids when one is rejected
+      fetchUserBids();
     };
 
     socket.on('bidAccepted', handleBidAccepted);
@@ -51,7 +52,6 @@ const MyBids = () => {
   }, [socket]);
 
   useEffect(() => {
-    // Reapply pagination when filter changes
     setCurrentPage(1);
   }, [filter]);
 
@@ -59,7 +59,6 @@ const MyBids = () => {
     try {
       setLoading(true);
       setError("");
-      // Fetch all bids at once for client-side filtering
       const response = await getUserBids(1, 1000);
       const fetchedBids = response.data.bids || response.data;
       setAllBids(fetchedBids);
@@ -74,10 +73,13 @@ const MyBids = () => {
     }
   };
 
-  const handleDeleteBid = async (bidId) => {
-    if (!window.confirm("Are you sure you want to delete this bid?")) {
-      return;
-    }
+  const handleDeleteBid = (bidId, gigTitle) => {
+    setConfirmDialog({ isOpen: true, bidId, gigTitle });
+  };
+
+  const confirmDeleteBid = async () => {
+    const { bidId } = confirmDialog;
+    setConfirmDialog({ isOpen: false, bidId: null, gigTitle: "" });
 
     try {
       await deleteBid(bidId);
@@ -85,7 +87,6 @@ const MyBids = () => {
       setAllBids(updatedBids);
       setBids(updatedBids);
       setNotification({ message: "Bid deleted successfully!", type: "success" });
-      // Recalculate pagination
       const filteredBids = getFilteredBids(updatedBids);
       setTotalBids(filteredBids.length);
       setTotalPages(Math.ceil(filteredBids.length / itemsPerPage));
@@ -208,6 +209,16 @@ const MyBids = () => {
           onClose={() => setNotification(null)}
         />
       )}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title="Delete Bid"
+        message={`Are you sure you want to delete your bid for "${confirmDialog.gigTitle}"? This action cannot be undone.`}
+        onConfirm={confirmDeleteBid}
+        onCancel={() => setConfirmDialog({ isOpen: false, bidId: null, gigTitle: "" })}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
       <div className="min-h-screen flex flex-col">
       <section className="bg-gradient-to-r from-royal-blue to-royal-blue/90 py-12 px-6">
         <div className="max-w-7xl mx-auto">
@@ -403,7 +414,7 @@ const MyBids = () => {
                               Edit Bid
                             </button>
                             <button
-                              onClick={() => handleDeleteBid(bid._id)}
+                              onClick={() => handleDeleteBid(bid._id, bid.gigId?.title || 'this gig')}
                               className="flex-1 border-2 border-red-500 text-red-500 py-3 rounded-lg font-semibold hover:bg-red-50 transition-all duration-200"
                             >
                               Delete

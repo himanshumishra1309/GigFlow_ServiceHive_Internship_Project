@@ -176,22 +176,22 @@ const getGigById = asyncHandler(async (req, res)=>{
 
 
 const deleteGig = asyncHandler(async (req, res)=>{
-  const gigId = req.body;
+  const gigId = req.params.id;
 
   if(!gigId){
     throw new ApiError(404, "Gig id was not received");
   }
 
-  const deleteGig = await Gig.findByIdAndDelete(gigId);
+  const deletedGig = await Gig.findByIdAndDelete(gigId);
 
-  if(!deleteGig){
+  if(!deletedGig){
     throw new ApiError(404, "Gig with the provided id was not found");
   }
 
   return res.status(200).json(
     new ApiResponse(
       200,
-      foundGig,
+      deletedGig,
       "Gig deleted successfully"
     )
   );
@@ -256,6 +256,7 @@ const acceptGigFreelancer = asyncHandler(async (req, res)=>{
       gigId,
       {
         hiredFreelancerId: freelancerId,
+        status: "assigned"
       },
       {new: true, session}
     ).populate("hiredFreelancerId", "name email");
@@ -266,8 +267,6 @@ const acceptGigFreelancer = asyncHandler(async (req, res)=>{
   
     await session.commitTransaction();
 
-    // Emit socket events
-    // Notify hired freelancer
     const hiredBidPopulated = await Bid.findById(bidId)
       .populate('freelancerId', 'name username email')
       .populate('gigId', 'title budget');
@@ -280,7 +279,6 @@ const acceptGigFreelancer = asyncHandler(async (req, res)=>{
       });
     }
 
-    // Notify rejected freelancers
     const rejectedBids = await Bid.find({
       gigId: gigId,
       _id: {$ne: bidId},

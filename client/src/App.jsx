@@ -27,52 +27,52 @@ const ProtectedRoute = ({children}) => {
   return isLoggedIn ? children : <Navigate to="/login"/>;
 }
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Layout/>,
-    children: [
-      {
-        path: "",
-        element: <Home/>
-      },
-      {
-        path: "login",
-        element: <Login/>
-      },
-      {
-        path: "register",
-        element: <Register/>
-      },
-      {
-        path: "gigs",
-        element: <BrowseGigs/>
-      },
-      {
-        path: "gigs/:gigId",
-        element: <GigDetails/>
-      },
-      {
-        path: "create-gig",
-        element: <ProtectedRoute><CreateGig/></ProtectedRoute>
-      },
-      {
-        path: "my-gigs",
-        element: <ProtectedRoute><MyGigs/></ProtectedRoute>
-      },
-      {
-        path: "gigs/:gigId/bids",
-        element: <ProtectedRoute><GigBids/></ProtectedRoute>
-      },
-      {
-        path: "my-bids",
-        element: <ProtectedRoute><MyBids/></ProtectedRoute>
-      }
-    ]
-  }
-])
-
 function App() {
+  const router = createBrowserRouter([
+    {
+      path: '/',
+      element: <Layout/>,
+      children: [
+        {
+          path: "",
+          element: <Home/>
+        },
+        {
+          path: "login",
+          element: <Login/>
+        },
+        {
+          path: "register",
+          element: <Register/>
+        },
+        {
+          path: "gigs",
+          element: <BrowseGigs/>
+        },
+        {
+          path: "gigs/:gigId",
+          element: <GigDetails/>
+        },
+        {
+          path: "create-gig",
+          element: <ProtectedRoute><CreateGig/></ProtectedRoute>
+        },
+        {
+          path: "my-gigs",
+          element: <ProtectedRoute><MyGigs/></ProtectedRoute>
+        },
+        {
+          path: "gigs/:gigId/bids",
+          element: <ProtectedRoute><GigBids/></ProtectedRoute>
+        },
+        {
+          path: "my-bids",
+          element: <ProtectedRoute><MyBids/></ProtectedRoute>
+        }
+      ]
+    }
+  ]);
+
   return (
     <RouterProvider router={router}/>
   )

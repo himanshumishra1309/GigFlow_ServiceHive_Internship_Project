@@ -5,6 +5,7 @@ import useAuth from "../context/authContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
 import Pagination from "../components/Pagination";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const MyGigs = () => {
   const navigate = useNavigate();
@@ -16,19 +17,17 @@ const MyGigs = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalGigs, setTotalGigs] = useState(0);
   const itemsPerPage = 10;
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, gigId: null, gigTitle: "" });
 
   const fetchMyGigs = async (page = 1) => {
     try {
       setIsLoading(true);
       setError("");
-      // Fetch all gigs with pagination, then filter on frontend for "my gigs"
-      // In production, you'd want a dedicated backend endpoint for user's gigs
-      const response = await getAllGigs("", page, 100); // Fetch larger batch
+      const response = await getAllGigs("", page, 100);
       const myGigs = response.data.gigs.filter(
         (gig) => gig.ownerId._id === user._id
       );
       
-      // Manual pagination after filtering
       const startIndex = (page - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const paginatedGigs = myGigs.slice(startIndex, endIndex);
@@ -48,14 +47,16 @@ const MyGigs = () => {
     fetchMyGigs(currentPage);
   }, [currentPage]);
 
-  const handleDelete = async (gigId) => {
-    if (!window.confirm("Are you sure you want to delete this gig?")) {
-      return;
-    }
+  const handleDelete = (gigId, gigTitle) => {
+    setConfirmDialog({ isOpen: true, gigId, gigTitle });
+  };
+
+  const confirmDelete = async () => {
+    const { gigId } = confirmDialog;
+    setConfirmDialog({ isOpen: false, gigId: null, gigTitle: "" });
 
     try {
       await deleteGig(gigId);
-      // Refetch to update pagination
       fetchMyGigs(currentPage);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to delete gig");
@@ -72,7 +73,18 @@ const MyGigs = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title="Delete Gig"
+        message={`Are you sure you want to delete "${confirmDialog.gigTitle}"? This action cannot be undone.`}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmDialog({ isOpen: false, gigId: null, gigTitle: "" })}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
+      <div className="min-h-screen flex flex-col">
       <section className="bg-gradient-to-r from-royal-blue to-royal-blue/90 py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
@@ -163,7 +175,7 @@ const MyGigs = () => {
                           View Details
                         </button>
                         <button
-                          onClick={() => handleDelete(gig._id)}
+                          onClick={() => handleDelete(gig._id, gig.title)}
                           className="border-2 border-red-500 text-red-500 px-6 py-2 rounded-lg font-semibold hover:bg-red-50 transition-all duration-200 cursor-pointer"
                         >
                           Delete
@@ -182,7 +194,8 @@ const MyGigs = () => {
           )}
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 };
 

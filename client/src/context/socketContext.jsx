@@ -26,7 +26,6 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    // Connect to socket server
     const newSocket = io("http://localhost:8000", {
       withCredentials: true,
       transports: ["websocket", "polling"],
@@ -34,7 +33,6 @@ export const SocketProvider = ({ children }) => {
 
     newSocket.on("connect", () => {
       console.log("Socket connected:", newSocket.id);
-      // Authenticate user
       newSocket.emit("authenticate", user._id);
     });
 
@@ -42,7 +40,6 @@ export const SocketProvider = ({ children }) => {
       console.log("Socket disconnected");
     });
 
-    // Listen for new bid notifications (for gig owners)
     newSocket.on("newBid", (data) => {
       console.log("New bid received:", data);
       addNotification({
@@ -54,7 +51,6 @@ export const SocketProvider = ({ children }) => {
       });
     });
 
-    // Listen for bid acceptance (for freelancers)
     newSocket.on("bidAccepted", (data) => {
       console.log("Bid accepted:", data);
       addNotification({
@@ -66,7 +62,6 @@ export const SocketProvider = ({ children }) => {
       });
     });
 
-    // Listen for bid rejection (for freelancers)
     newSocket.on("bidRejected", (data) => {
       console.log("Bid rejected:", data);
       addNotification({
@@ -87,7 +82,6 @@ export const SocketProvider = ({ children }) => {
 
   const addNotification = (notification) => {
     setNotifications((prev) => [notification, ...prev]);
-    // Auto remove after 10 seconds
     setTimeout(() => {
       removeNotification(notification.id);
     }, 10000);
