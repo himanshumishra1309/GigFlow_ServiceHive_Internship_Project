@@ -14,7 +14,16 @@ import useAuth from './context/authContext'
 import ScrollToTop from './components/ScrollToTop'
 
 const ProtectedRoute = ({children}) => {
-  const {isLoggedIn} = useAuth();
+  const {isLoggedIn, isLoading} = useAuth();
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bone">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-royal-blue"></div>
+      </div>
+    );
+  }
+  
   return isLoggedIn ? children : <Navigate to="/login"/>;
 }
 

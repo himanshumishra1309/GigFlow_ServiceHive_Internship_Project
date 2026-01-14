@@ -4,6 +4,9 @@ import useAuth from "../context/authContext";
 import { getGigBids, hireFreelancer, getGigById } from "../service/service";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
+import Notification from "../components/Notification";
+import ConfirmDialog from "../components/ConfirmDialog";
+import Pagination from "../components/Pagination";
 
 const GigBids = () => {
   const { gigId } = useParams();
@@ -15,6 +18,12 @@ const GigBids = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [hiringBidId, setHiringBidId] = useState(null);
+  const [notification, setNotification] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, bidId: null });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalBids, setTotalBids] = useState(0);
+  const itemsPerPage = 8;
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -22,7 +31,7 @@ const GigBids = () => {
       return;
     }
     fetchGigAndBids();
-  }, [gigId, isLoggedIn]);
+  }, [gigId, isLoggedIn, currentPage]);
 
   const fetchGigAndBids = async () => {
     try {
@@ -33,14 +42,16 @@ const GigBids = () => {
       const gigData = gigResponse.data;
       setGig(gigData);
 
-      if (user && gigData.owner._id !== user._id) {
+      if (user && gigData.ownerId?._id !== user._id) {
         setError("You are not authorized to view bids for this gig");
         setLoading(false);
         return;
       }
 
-      const bidsResponse = await getGigBids(gigId);
-      setBids(bidsResponse.data);
+      const bidsResponse = await getGigBids(gigId, currentPage, itemsPerPage);
+      setBids(bidsResponse.data.bids || bidsResponse.data);
+      setTotalPages(bidsResponse.data.totalPages || 1);
+      setTotalBids(bidsResponse.data.total || (bidsResponse.data.bids || bidsResponse.data).length);
     } catch (err) {
       console.error("Error fetching gig bids:", err);
       setError(err.response?.data?.message || "Failed to load bids");
@@ -50,21 +61,29 @@ const GigBids = () => {
   };
 
   const handleHireFreelancer = async (bidId) => {
-    if (!window.confirm("Are you sure you want to hire this freelancer?")) {
-      return;
-    }
+    setConfirmDialog({ isOpen: true, bidId });
+  };
+
+  const confirmHire = async () => {
+    const { bidId } = confirmDialog;
+    setConfirmDialog({ isOpen: false, bidId: null });
 
     try {
       setHiringBidId(bidId);
       await hireFreelancer(gigId, bidId);
       await fetchGigAndBids();
-      alert("Freelancer hired successfully!");
+      setNotification({ message: "Freelancer hired successfully!", type: "success" });
     } catch (err) {
       console.error("Error hiring freelancer:", err);
-      alert(err.response?.data?.message || "Failed to hire freelancer");
+      setNotification({ message: err.response?.data?.message || "Failed to hire freelancer", type: "error" });
     } finally {
       setHiringBidId(null);
     }
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const getStatusDisplay = (status) => {
@@ -98,7 +117,7 @@ const GigBids = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-bone px-6">
         <ErrorMessage message={error} />
-        <Link to="/my-gigs" className="mt-4 text-royal-blue hover:text-powder-blue font-semibold">
+        <Link to="/my-gigs" className="mt-4 text-royal-blue hover:text-blue-600 font-semibold">
           Back to My Gigs
         </Link>
       </div>
@@ -106,10 +125,28 @@ const GigBids = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title="Hire Freelancer"
+        message="Are you sure you want to hire this freelancer?"
+        onConfirm={confirmHire}
+        onCancel={() => setConfirmDialog({ isOpen: false, bidId: null })}
+        confirmText="Hire"
+        cancelText="Cancel"
+        type="primary"
+      />
+      <div className="min-h-screen flex flex-col">
       <section className="bg-gradient-to-r from-royal-blue to-royal-blue/90 py-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <Link to={`/gigs/${gigId}`} className="inline-flex items-center text-bone hover:text-powder-blue mb-4 font-semibold">
+          <Link to={`/gigs/${gigId}`} className="inline-flex items-center text-bone hover:text-blue-600 mb-4 font-semibold">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -137,7 +174,7 @@ const GigBids = () => {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-royal-blue mb-2">Total Bids</h2>
-                  <p className="text-4xl font-bold text-royal-blue">{bids.length}</p>
+                  <p className="text-4xl font-bold text-royal-blue">{totalBids}</p>
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-royal-blue mb-2">Status</h2>
@@ -149,7 +186,7 @@ const GigBids = () => {
             </div>
           )}
 
-          {bids.length === 0 ? (
+          {bids.length === 0 && totalBids === 0 ? (
             <div className="text-center py-20">
               <div className="w-24 h-24 bg-powder-blue rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-12 h-12 text-royal-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,8 +199,14 @@ const GigBids = () => {
               </p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {bids.map((bid) => (
+            <>
+              <div className="mb-4">
+                <p className="text-royal-blue opacity-70">
+                  Showing {bids.length} of {totalBids} bids
+                </p>
+              </div>
+              <div className="space-y-6">
+                {bids.map((bid) => (
                 <div key={bid._id} className={`bg-white rounded-xl shadow-lg p-6 border-2 ${getBorderStyle(bid.status)} hover:border-royal-blue transition-all duration-300`}>
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-4">
@@ -220,11 +263,18 @@ const GigBids = () => {
                   )}
                 </div>
               ))}
-            </div>
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </>
           )}
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 };
 

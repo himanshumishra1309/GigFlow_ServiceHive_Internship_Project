@@ -30,22 +30,22 @@ const Footer = () => {
             <h3 className="text-powder-blue font-bold text-lg mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <a href="/gigs" className="text-bone hover:text-powder-blue transition-colors duration-200">
+                <a href="/gigs" className="text-bone hover:text-blue-600 transition-colors duration-200">
                   Browse Gigs
                 </a>
               </li>
               <li>
-                <a href="/create-gig" className="text-bone hover:text-powder-blue transition-colors duration-200">
+                <a href="/create-gig" className="text-bone hover:text-blue-600 transition-colors duration-200">
                   Post a Job
                 </a>
               </li>
               <li>
-                <a href="/my-gigs" className="text-bone hover:text-powder-blue transition-colors duration-200">
+                <a href="/my-gigs" className="text-bone hover:text-blue-600 transition-colors duration-200">
                   My Gigs
                 </a>
               </li>
               <li>
-                <a href="/my-bids" className="text-bone hover:text-powder-blue transition-colors duration-200">
+                <a href="/my-bids" className="text-bone hover:text-blue-600 transition-colors duration-200">
                   My Bids
                 </a>
               </li>
@@ -57,22 +57,22 @@ const Footer = () => {
             <h3 className="text-powder-blue font-bold text-lg mb-4">Support</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-bone hover:text-powder-blue transition-colors duration-200">
+                <a href="#" className="text-bone hover:text-blue-600 transition-colors duration-200">
                   Help Center
                 </a>
               </li>
               <li>
-                <a href="#" className="text-bone hover:text-powder-blue transition-colors duration-200">
+                <a href="#" className="text-bone hover:text-blue-600 transition-colors duration-200">
                   Terms of Service
                 </a>
               </li>
               <li>
-                <a href="#" className="text-bone hover:text-powder-blue transition-colors duration-200">
+                <a href="#" className="text-bone hover:text-blue-600 transition-colors duration-200">
                   Privacy Policy
                 </a>
               </li>
               <li>
-                <a href="#" className="text-bone hover:text-powder-blue transition-colors duration-200">
+                <a href="#" className="text-bone hover:text-blue-600 transition-colors duration-200">
                   Contact Us
                 </a>
               </li>

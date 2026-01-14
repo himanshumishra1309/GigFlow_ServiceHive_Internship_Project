@@ -38,19 +38,19 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-8">
-            <NavLink to="/" className={({isActive})=>`text-bone hover:text-powder-blue transition-colors duration-200 font-medium ${isActive ? "underline" : ""}`}>
+            <NavLink to="/" className={({isActive})=>`text-bone hover:text-blue-600 transition-colors duration-200 font-medium ${isActive ? "underline" : ""}`}>
               Home
             </NavLink>
-            <NavLink to="/gigs" className={({isActive})=>`text-bone hover:text-powder-blue transition-colors duration-200 font-medium ${isActive ? "underline" : ""}`}>
+            <NavLink to="/gigs" className={({isActive})=>`text-bone hover:text-blue-600 transition-colors duration-200 font-medium ${isActive ? "underline" : ""}`}>
               Browse Gigs
             </NavLink>
-            <NavLink to="/create-gig" className={({isActive})=>`text-bone hover:text-powder-blue transition-colors duration-200 font-medium ${isActive ? "underline" : ""}`}>
+            <NavLink to="/create-gig" className={({isActive})=>`text-bone hover:text-blue-600 transition-colors duration-200 font-medium ${isActive ? "underline" : ""}`}>
               Post a Job
             </NavLink>
-            <NavLink to="/my-gigs" className={({isActive})=>`text-bone hover:text-powder-blue transition-colors duration-200 font-medium ${isActive ? "underline" : ""}`}>
+            <NavLink to="/my-gigs" className={({isActive})=>`text-bone hover:text-blue-600 transition-colors duration-200 font-medium ${isActive ? "underline" : ""}`}>
               My Gigs
             </NavLink>
-            <NavLink to="/my-bids" className={({isActive})=>`text-bone hover:text-powder-blue transition-colors duration-200 font-medium ${isActive ? "underline" : ""}`}>
+            <NavLink to="/my-bids" className={({isActive})=>`text-bone hover:text-blue-600 transition-colors duration-200 font-medium ${isActive ? "underline" : ""}`}>
               My Bids
             </NavLink>
           </div>
@@ -73,7 +73,7 @@ const Navbar = () => {
               <div className="relative">
                 <button 
                   onClick={() => setShowDropdown(!showDropdown)}
-                  className="flex items-center space-x-2 text-bone hover:text-powder-blue transition-colors duration-200"
+                  className="flex items-center space-x-2 text-bone hover:text-blue-600 transition-colors duration-200"
                 >
                   <div className="w-10 h-10 bg-powder-blue rounded-full flex items-center justify-center">
                     <span className="text-royal-blue font-bold text-lg">{getInitials(user?.name)}</span>
@@ -116,7 +116,7 @@ const Navbar = () => {
           <div className="md:hidden">
             <button 
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="text-bone hover:text-powder-blue transition-colors"
+              className="text-bone hover:text-blue-600 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showMobileMenu ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
@@ -128,21 +128,21 @@ const Navbar = () => {
         {showMobileMenu && (
           <div className="md:hidden mt-4 pb-4">
             <div className="flex flex-col space-y-3">
-              <NavLink to="/" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-powder-blue transition-colors py-2">
+              <NavLink to="/" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-blue-600 transition-colors py-2">
                 Home
               </NavLink>
-              <NavLink to="/gigs" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-powder-blue transition-colors py-2">
+              <NavLink to="/gigs" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-blue-600 transition-colors py-2">
                 Browse Gigs
               </NavLink>
               {isLoggedIn && (
                 <>
-                  <NavLink to="/create-gig" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-powder-blue transition-colors py-2">
+                  <NavLink to="/create-gig" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-blue-600 transition-colors py-2">
                     Post a Job
                   </NavLink>
-                  <NavLink to="/my-gigs" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-powder-blue transition-colors py-2">
+                  <NavLink to="/my-gigs" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-blue-600 transition-colors py-2">
                     My Gigs
                   </NavLink>
-                  <NavLink to="/my-bids" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-powder-blue transition-colors py-2">
+                  <NavLink to="/my-bids" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-blue-600 transition-colors py-2">
                     My Bids
                   </NavLink>
                 </>
@@ -150,10 +150,10 @@ const Navbar = () => {
               <hr className="border-powder-blue my-2" />
               {!isLoggedIn ? (
                 <>
-                  <NavLink to="/login" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-powder-blue transition-colors py-2">
+                  <NavLink to="/login" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-blue-600 transition-colors py-2">
                     Login
                   </NavLink>
-                  <NavLink to="/register" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-powder-blue transition-colors py-2">
+                  <NavLink to="/register" onClick={() => setShowMobileMenu(false)} className="text-bone hover:text-blue-600 transition-colors py-2">
                     Sign Up
                   </NavLink>
                 </>

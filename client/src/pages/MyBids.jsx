@@ -3,28 +3,46 @@ import { Link } from "react-router-dom";
 import { getUserBids, deleteBid, updateBid } from "../service/service";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
+import Notification from "../components/Notification";
+import Pagination from "../components/Pagination";
 
 const MyBids = () => {
   const [bids, setBids] = useState([]);
+  const [allBids, setAllBids] = useState([]); // Store all bids for filtering
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalBids, setTotalBids] = useState(0);
+  const itemsPerPage = 6;
 
   const [editingBid, setEditingBid] = useState(null);
   const [editFormData, setEditFormData] = useState({ message: "", proposedPrice: "" });
   const [editError, setEditError] = useState("");
   const [editLoading, setEditLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     fetchUserBids();
   }, []);
 
+  useEffect(() => {
+    // Reapply pagination when filter changes
+    setCurrentPage(1);
+  }, [filter]);
+
   const fetchUserBids = async () => {
     try {
       setLoading(true);
       setError("");
-      const response = await getUserBids();
-      setBids(response.data);
+      // Fetch all bids at once for client-side filtering
+      const response = await getUserBids(1, 1000);
+      const fetchedBids = response.data.bids || response.data;
+      setAllBids(fetchedBids);
+      setBids(fetchedBids);
+      setTotalBids(fetchedBids.length);
+      setTotalPages(Math.ceil(fetchedBids.length / itemsPerPage));
     } catch (err) {
       console.error("Error fetching user bids:", err);
       setError(err.response?.data?.message || "Failed to load bids");
@@ -40,10 +58,17 @@ const MyBids = () => {
 
     try {
       await deleteBid(bidId);
-      setBids(bids.filter((bid) => bid._id !== bidId));
+      const updatedBids = allBids.filter((bid) => bid._id !== bidId);
+      setAllBids(updatedBids);
+      setBids(updatedBids);
+      setNotification({ message: "Bid deleted successfully!", type: "success" });
+      // Recalculate pagination
+      const filteredBids = getFilteredBids(updatedBids);
+      setTotalBids(filteredBids.length);
+      setTotalPages(Math.ceil(filteredBids.length / itemsPerPage));
     } catch (err) {
       console.error("Error deleting bid:", err);
-      alert(err.response?.data?.message || "Failed to delete bid");
+      setNotification({ message: err.response?.data?.message || "Failed to delete bid", type: "error" });
     }
   };
 
@@ -82,7 +107,9 @@ const MyBids = () => {
       setEditLoading(true);
       setEditError("");
       const response = await updateBid(bidId, gigId, editFormData.message, Number(editFormData.proposedPrice));
-      setBids(bids.map((bid) => (bid._id === bidId ? response.data : bid)));
+      const updatedBids = allBids.map((bid) => (bid._id === bidId ? response.data : bid));
+      setAllBids(updatedBids);
+      setBids(updatedBids);
       setEditingBid(null);
       setEditFormData({ message: "", proposedPrice: "" });
     } catch (err) {
@@ -93,15 +120,34 @@ const MyBids = () => {
     }
   };
 
-  const getFilteredBids = () => {
-    if (filter === "all") return bids;
-    return bids.filter((bid) => bid.status === filter);
+  const getFilteredBids = (bidsList = allBids) => {
+    if (filter === "all") return bidsList.filter(bid => bid && bid.status);
+    return bidsList.filter((bid) => bid && bid.status === filter);
+  };
+
+  const getPaginatedBids = () => {
+    const filtered = getFilteredBids();
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filtered.slice(startIndex, endIndex);
   };
 
   const getBidCount = (status) => {
-    if (status === "all") return bids.length;
-    return bids.filter((bid) => bid.status === status).length;
+    if (status === "all") return allBids.filter(bid => bid && bid.status).length;
+    return allBids.filter((bid) => bid && bid.status === status).length;
   };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const filtered = getFilteredBids();
+    setTotalBids(filtered.length);
+    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+    setCurrentPage(1);
+  }, [filter, allBids]);
 
   const getStatusDisplay = (status) => {
     if (status === "pending") return "Pending";
@@ -131,7 +177,15 @@ const MyBids = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+      <div className="min-h-screen flex flex-col">
       <section className="bg-gradient-to-r from-royal-blue to-royal-blue/90 py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold text-bone mb-4">My Bids</h1>
@@ -210,8 +264,14 @@ const MyBids = () => {
               </Link>
             </div>
           ) : (
-            <div className="space-y-6">
-              {getFilteredBids().map((bid) => (
+            <>
+              <div className="mb-4">
+                <p className="text-royal-blue opacity-70">
+                  Showing {getPaginatedBids().length} of {totalBids} {filter === "all" ? "" : filter} bids
+                </p>
+              </div>
+              <div className="space-y-6">
+                {getPaginatedBids().map((bid) => (
                 <div key={bid._id} className={`bg-white rounded-xl shadow-lg p-6 border-2 ${getBorderStyle(bid.status)} transition-all duration-300`}>
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -221,10 +281,10 @@ const MyBids = () => {
                         </span>
                       </div>
                       <h3 className="text-2xl font-bold text-royal-blue mb-2">
-                        {bid.gigId.title}
+                        {bid.gigId?.title || 'Untitled Gig'}
                       </h3>
                       <p className="text-royal-blue opacity-70 mb-3">
-                        Client: {bid.gigId.owner.name} • Bid submitted {new Date(bid.createdAt).toLocaleDateString()}
+                        Client: {bid.gigId?.ownerId?.name || 'Unknown'} • Bid submitted {new Date(bid.createdAt).toLocaleDateString()}
                       </p>
                       {bid.status === "hired" && (
                         <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-3">
@@ -246,7 +306,7 @@ const MyBids = () => {
                       <p className="text-3xl font-bold text-royal-blue mb-1">${bid.proposedPrice}</p>
                       <p className="text-sm text-royal-blue opacity-70">Your Bid</p>
                       <p className={`text-xs mt-2 ${bid.status === "hired" ? "text-green-600" : "text-royal-blue opacity-60"}`}>
-                        vs ${bid.gigId.budget} budget
+                        vs ${bid.gigId?.budget || 0} budget
                       </p>
                     </div>
                   </div>
@@ -291,7 +351,7 @@ const MyBids = () => {
                               Cancel
                             </button>
                             <button
-                              onClick={() => handleUpdateBid(bid._id, bid.gigId._id)}
+                              onClick={() => handleUpdateBid(bid._id, bid.gigId?._id)}
                               className="flex-1 bg-royal-blue text-bone py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200"
                             >
                               Save Changes
@@ -306,7 +366,7 @@ const MyBids = () => {
                         <strong>Your Proposal:</strong> {bid.message.length > 100 ? bid.message.substring(0, 100) + "..." : bid.message}
                       </p>
                       <div className="flex items-center space-x-3">
-                        <Link to={`/gigs/${bid.gigId._id}`} className="flex-1">
+                        <Link to={`/gigs/${bid.gigId?._id}`} className="flex-1">
                           <button className="w-full bg-royal-blue text-bone py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200">
                             View Project Details
                           </button>
@@ -332,11 +392,18 @@ const MyBids = () => {
                   )}
                 </div>
               ))}
-            </div>
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </>
           )}
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 };
 

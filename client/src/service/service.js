@@ -45,9 +45,9 @@ export const logout = async () => {
   return response.data;
 };
 
-export const getAllGigs = async (search = "") => {
+export const getAllGigs = async (search = "", page = 1, limit = 10) => {
   const response = await apiClient.get("/gigs", {
-    params: { search },
+    params: { search, page, limit },
   });
   return response.data;
 };
@@ -110,12 +110,16 @@ export const deleteBid = async (bidId) => {
   return response.data;
 };
 
-export const getUserBids = async () => {
-  const response = await apiClient.get("/bids/user/mybids");
+export const getUserBids = async (page = 1, limit = 10) => {
+  const response = await apiClient.get("/bids/user/mybids", {
+    params: { page, limit },
+  });
   return response.data;
 };
 
-export const getGigBids = async (gigId) => {
-  const response = await apiClient.get(`/bids/${gigId}`);
+export const getGigBids = async (gigId, page = 1, limit = 10) => {
+  const response = await apiClient.get(`/bids/${gigId}`, {
+    params: { page, limit },
+  });
   return response.data;
 };

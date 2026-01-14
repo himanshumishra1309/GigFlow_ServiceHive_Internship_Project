@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import useAuth from "../context/authContext";
-import { getGigById, createBid } from "../service/service";
+import { getGigById, createBid, getGigBids, hireFreelancer } from "../service/service";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
+import Notification from "../components/Notification";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const GigDetails = () => {
   const { gigId } = useParams();
@@ -22,9 +24,22 @@ const GigDetails = () => {
   const [bidLoading, setBidLoading] = useState(false);
   const [bidError, setBidError] = useState("");
 
+  const [bids, setBids] = useState([]);
+  const [bidsLoading, setBidsLoading] = useState(false);
+  const [bidsError, setBidsError] = useState("");
+  const [hiringBidId, setHiringBidId] = useState(null);
+  const [notification, setNotification] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, bidId: null, freelancerName: "" });
+
   useEffect(() => {
     fetchGigDetails();
   }, [gigId]);
+
+  useEffect(() => {
+    if (gig && user && user._id === gig.ownerId?._id) {
+      fetchBids();
+    }
+  }, [gig, user]);
 
   const fetchGigDetails = async () => {
     try {
@@ -37,6 +52,21 @@ const GigDetails = () => {
       setError(err.response?.data?.message || "Failed to load gig details");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBids = async () => {
+    try {
+      setBidsLoading(true);
+      setBidsError("");
+      // Fetch a limited number of bids for inline display
+      const response = await getGigBids(gigId, 1, 5); // Show only first 5 bids
+      setBids(response.data.bids || response.data || []);
+    } catch (err) {
+      console.error("Error fetching bids:", err);
+      setBidsError(err.response?.data?.message || "Failed to load bids");
+    } finally {
+      setBidsLoading(false);
     }
   };
 
@@ -64,12 +94,34 @@ const GigDetails = () => {
       await createBid(gigId, bidFormData.message, Number(bidFormData.proposedPrice));
       setBidFormData({ message: "", proposedPrice: "" });
       setShowBidForm(false);
-      alert("Bid submitted successfully!");
+      setNotification({ message: "Bid submitted successfully!", type: "success" });
     } catch (err) {
       console.error("Error submitting bid:", err);
       setBidError(err.response?.data?.message || "Failed to submit bid");
     } finally {
       setBidLoading(false);
+    }
+  };
+
+  const handleHire = async (bidId, freelancerName) => {
+    setConfirmDialog({ isOpen: true, bidId, freelancerName });
+  };
+
+  const confirmHire = async () => {
+    const { bidId } = confirmDialog;
+    setConfirmDialog({ isOpen: false, bidId: null, freelancerName: "" });
+
+    try {
+      setHiringBidId(bidId);
+      await hireFreelancer(gigId, bidId);
+      setNotification({ message: "Freelancer hired successfully!", type: "success" });
+      fetchGigDetails();
+      fetchBids();
+    } catch (err) {
+      console.error("Error hiring freelancer:", err);
+      setNotification({ message: err.response?.data?.message || "Failed to hire freelancer", type: "error" });
+    } finally {
+      setHiringBidId(null);
     }
   };
 
@@ -87,7 +139,7 @@ const GigDetails = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-bone px-6">
         <ErrorMessage message={error} />
-        <Link to="/gigs" className="mt-4 text-royal-blue hover:text-powder-blue font-semibold">
+        <Link to="/gigs" className="mt-4 text-royal-blue hover:text-blue-600 font-semibold">
           Back to Browse
         </Link>
       </div>
@@ -98,7 +150,7 @@ const GigDetails = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-bone px-6">
         <p className="text-royal-blue text-lg mb-4">Gig not found</p>
-        <Link to="/gigs" className="text-royal-blue hover:text-powder-blue font-semibold">
+        <Link to="/gigs" className="text-royal-blue hover:text-blue-600 font-semibold">
           Back to Browse
         </Link>
       </div>
@@ -106,10 +158,28 @@ const GigDetails = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title="Hire Freelancer"
+        message={`Are you sure you want to hire ${confirmDialog.freelancerName} for this project?`}
+        onConfirm={confirmHire}
+        onCancel={() => setConfirmDialog({ isOpen: false, bidId: null, freelancerName: "" })}
+        confirmText="Hire"
+        cancelText="Cancel"
+        type="primary"
+      />
+      <div className="min-h-screen flex flex-col">
       <section className="flex-1 bg-bone py-12 px-6">
         <div className="max-w-5xl mx-auto">
-          <Link to="/gigs" className="inline-flex items-center text-royal-blue hover:text-powder-blue mb-6 font-semibold">
+          <Link to="/gigs" className="inline-flex items-center text-royal-blue hover:text-blue-600 mb-6 font-semibold">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -155,18 +225,93 @@ const GigDetails = () => {
           </div>
 
           {isOwner ? (
-            <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-powder-blue text-center">
-              <h2 className="text-2xl font-bold text-royal-blue mb-4">
-                This is your gig
+            <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-powder-blue">
+              <h2 className="text-2xl font-bold text-royal-blue mb-6">
+                Bids Received ({bids.length})
               </h2>
-              <p className="text-royal-blue mb-6">
-                Review and manage all bids submitted for this project
-              </p>
-              <Link to={`/gigs/${gigId}/bids`}>
-                <button className="bg-royal-blue text-bone px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all duration-200 shadow-lg">
-                  View All Bids
-                </button>
-              </Link>
+
+              {bidsLoading ? (
+                <div className="flex justify-center py-8">
+                  <LoadingSpinner />
+                </div>
+              ) : bidsError ? (
+                <ErrorMessage message={bidsError} />
+              ) : bids.length === 0 ? (
+                <div className="text-center py-12">
+                  <svg className="w-20 h-20 mx-auto mb-4 text-powder-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  </svg>
+                  <p className="text-royal-blue text-lg font-semibold mb-2">
+                    No bids yet
+                  </p>
+                  <p className="text-royal-blue opacity-70">
+                    Be patient! Freelancers will start bidding on your project soon.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {bids.map((bid) => (
+                    <div
+                      key={bid._id}
+                      className={`p-6 rounded-lg border-2 ${
+                        bid.status === "hired"
+                          ? "border-green-500 bg-green-50"
+                          : bid.status === "rejected"
+                          ? "border-red-500 bg-red-50"
+                          : "border-powder-blue bg-white"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h3 className="text-xl font-bold text-royal-blue">
+                              {bid.freelancerId?.name || "Unknown Freelancer"}
+                            </h3>
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                bid.status === "hired"
+                                  ? "bg-green-500 text-white"
+                                  : bid.status === "rejected"
+                                  ? "bg-red-500 text-white"
+                                  : "bg-powder-blue text-royal-blue"
+                              }`}
+                            >
+                              {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
+                            </span>
+                          </div>
+                          <p className="text-royal-blue opacity-70 text-sm">
+                            @{bid.freelancerId?.username || "unknown"} • {bid.freelancerId?.email || "no email"}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-royal-blue opacity-70 mb-1">Proposed Price</p>
+                          <p className="text-3xl font-bold text-royal-blue">${bid.proposedPrice}</p>
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <p className="text-sm font-semibold text-royal-blue mb-2">Cover Letter:</p>
+                        <p className="text-royal-blue leading-relaxed whitespace-pre-wrap">
+                          {bid.message}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm text-royal-blue opacity-70">
+                        <span>Submitted {new Date(bid.createdAt).toLocaleDateString()}</span>
+                        {bid.status === "pending" && gig.status === "open" && (
+                          <button
+                            onClick={() => handleHire(bid._id, bid.freelancerId?.name)}
+                            disabled={hiringBidId === bid._id}
+                            className="bg-royal-blue text-bone px-6 py-2 rounded-lg font-bold hover:bg-opacity-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {hiringBidId === bid._id ? "Hiring..." : "Hire Freelancer"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ) : isLoggedIn ? (
             !showBidForm ? (
@@ -261,7 +406,8 @@ const GigDetails = () => {
           )}
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 };
 

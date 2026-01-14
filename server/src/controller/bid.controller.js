@@ -8,12 +8,22 @@ const createBid = asyncHandler(async(req, res)=>{
   const {gigId, message, proposedPrice} = req.body;
   const freelancerId = req.user._id;
 
-  if([gigId, message, proposedPrice].some((field)=>field.trim() === "")){
+  if(!gigId || !message || !proposedPrice){
     throw new ApiError(400, "All the fields are required");
+  }
+
+  if(typeof message === 'string' && message.trim() === ""){
+    throw new ApiError(400, "Message cannot be empty");
   }
 
   if(!freelancerId){
     throw new ApiError(404, "Freelancer Id was not received");
+  }
+
+  // Check if user has already bid on this gig
+  const existingBid = await Bid.findOne({ gigId, freelancerId });
+  if(existingBid){
+    throw new ApiError(400, "You have already placed a bid on this gig");
   }
 
   const createdBid = await Bid.create({
@@ -34,11 +44,20 @@ const createBid = asyncHandler(async(req, res)=>{
 })
 
 const updateBid = asyncHandler(async(req, res)=>{
-  const {bidId, gigId, message, proposedPrice} = req.body;
+  const bidId = req.params.id;
+  const {gigId, message, proposedPrice} = req.body;
   const freelancerId = req.user._id;
 
-  if([gigId, message, proposedPrice].some((field)=>field.trim() === "")){
+  if(!bidId){
+    throw new ApiError(400, "Bid ID is required");
+  }
+
+  if(!gigId || !message || !proposedPrice){
     throw new ApiError(400, "All the fields are required");
+  }
+
+  if(typeof message === 'string' && message.trim() === ""){
+    throw new ApiError(400, "Message cannot be empty");
   }
 
   if(!freelancerId){
@@ -54,19 +73,34 @@ const updateBid = asyncHandler(async(req, res)=>{
       status:"pending"
     },
     {new : true}
-  )
+  ).populate("gigId", "title description slug budget ownerId")
+  .populate({
+    path: "gigId",
+    populate: {
+      path: "ownerId",
+      select: "name username email"
+    }
+  });
+
+  if(!updatedBid){
+    throw new ApiError(500, "Unable to update the bid");
+  }
 
   return res.status(200).json(
     new ApiResponse(
       200,
-      updateBid,
+      updatedBid,
       "Bid updated Successfully"
     )
   )
 })
 
 const deleteBid = asyncHandler(async(req, res)=>{
-  const {bidId} = req.body;
+  const bidId = req.params.id;
+
+  if(!bidId){
+    throw new ApiError(400, "Bid ID is required");
+  }
 
   const deletedBid = await Bid.findByIdAndDelete(bidId);
 
@@ -85,8 +119,25 @@ const deleteBid = asyncHandler(async(req, res)=>{
 
 const getUserBid = asyncHandler(async(req, res)=>{
   const freelancerId = req.user._id;
+  const {page = 1, limit = 10} = req.query;
 
-  const bidsByUser = await Bid.find({freelancerId: freelancerId}).populate("gidId", "title description slug budget");
+  const pageNumber = parseInt(page);
+  const limitNumber = parseInt(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const totalBids = await Bid.countDocuments({freelancerId: freelancerId});
+  const bidsByUser = await Bid.find({freelancerId: freelancerId})
+    .populate("gigId", "title description slug budget ownerId")
+    .populate({
+      path: "gigId",
+      populate: {
+        path: "ownerId",
+        select: "name username email"
+      }
+    })
+    .sort({createdAt: -1})
+    .skip(skip)
+    .limit(limitNumber);
 
   if(!bidsByUser){
     throw new ApiError(404, "No bids has been posted by the user");
@@ -95,7 +146,13 @@ const getUserBid = asyncHandler(async(req, res)=>{
   return res.status(200).json(
     new ApiResponse(
       200,
-      bidsByUser,
+      {
+        bids: bidsByUser,
+        total: totalBids,
+        totalPages: Math.ceil(totalBids / limitNumber),
+        currentPage: pageNumber,
+        count: bidsByUser.length
+      },
       "Bids posted by user found successfully"
     )
   )
@@ -104,6 +161,7 @@ const getUserBid = asyncHandler(async(req, res)=>{
 const getGigBid = asyncHandler(async(req, res)=>{
   const gigId = req.params.gigId;
   const userId = req.user._id;
+  const {page = 1, limit = 10} = req.query;
 
   const gig = await Gig.findById(gigId);
 
@@ -115,7 +173,16 @@ const getGigBid = asyncHandler(async(req, res)=>{
     throw new ApiError(403, "Access denied. Only the gig owner can view bids");
   }
 
-  const bidsForGig = await Bid.find({gigId: gigId});
+  const pageNumber = parseInt(page);
+  const limitNumber = parseInt(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const totalBids = await Bid.countDocuments({gigId: gigId});
+  const bidsForGig = await Bid.find({gigId: gigId})
+    .populate("freelancerId", "name username email")
+    .sort({createdAt: -1})
+    .skip(skip)
+    .limit(limitNumber);
 
   if(!bidsForGig){
     throw new ApiError(404, "No bid found for the gig");
@@ -124,7 +191,13 @@ const getGigBid = asyncHandler(async(req, res)=>{
   return res.status(200).json(
     new ApiResponse(
       200,
-      bidsForGig,
+      {
+        bids: bidsForGig,
+        total: totalBids,
+        totalPages: Math.ceil(totalBids / limitNumber),
+        currentPage: pageNumber,
+        count: bidsForGig.length
+      },
       "All the bids for the gig fetched successfully"
     )
   )

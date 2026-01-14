@@ -8,8 +8,16 @@ import mongoose from "mongoose";
 const createGig = asyncHandler(async (req, res)=>{
   const {title, description, budget, slug} = req.body;
 
-  if([title, description, budget].some((field)=>field.trim() === "")){
+  if(!title || !description || !budget){
     throw new ApiError(400, "All the fields are required");
+  }
+
+  if(typeof title === 'string' && title.trim() === ""){
+    throw new ApiError(400, "Title cannot be empty");
+  }
+
+  if(typeof description === 'string' && description.trim() === ""){
+    throw new ApiError(400, "Description cannot be empty");
   }
 
   const userId = req.user._id;
@@ -54,8 +62,20 @@ const updateGig = asyncHandler(async (req, res)=>{
     throw new ApiError(404, "Gig id was not received");
   }
 
-  if([title, description, budget, slug].some((field)=>field.trim() === "")){
+  if(!title || !description || !budget || !slug){
     throw new ApiError(400, "All the fields are required");
+  }
+
+  if(typeof title === 'string' && title.trim() === ""){
+    throw new ApiError(400, "Title cannot be empty");
+  }
+
+  if(typeof description === 'string' && description.trim() === ""){
+    throw new ApiError(400, "Description cannot be empty");
+  }
+
+  if(typeof slug === 'string' && slug.trim() === ""){
+    throw new ApiError(400, "Slug cannot be empty");
   }
 
   const isSlugPresent = await Gig.findOne({slug: slug, _id: {$ne: gigId}});
@@ -90,7 +110,7 @@ const updateGig = asyncHandler(async (req, res)=>{
 
 
 const getAllGig = asyncHandler(async (req, res)=>{
-  const {search} = req.query;
+  const {search, page = 1, limit = 10} = req.query;
   
   let filter = {status: "open"};
 
@@ -98,7 +118,16 @@ const getAllGig = asyncHandler(async (req, res)=>{
     filter.title = {$regex: search, $options: 'i'};
   }
 
-  const allGigs = await Gig.find(filter).populate("ownerId", "name email").sort({createdAt: -1});
+  const pageNumber = parseInt(page);
+  const limitNumber = parseInt(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const totalGigs = await Gig.countDocuments(filter);
+  const allGigs = await Gig.find(filter)
+    .populate("ownerId", "name email")
+    .sort({createdAt: -1})
+    .skip(skip)
+    .limit(limitNumber);
 
   if(!allGigs){
     throw new ApiError(500, "Error fetching gig");
@@ -109,10 +138,13 @@ const getAllGig = asyncHandler(async (req, res)=>{
       200, 
       {
         count: allGigs.length,
+        total: totalGigs,
+        totalPages: Math.ceil(totalGigs / limitNumber),
+        currentPage: pageNumber,
         gigs: allGigs
       }, 
       search 
-        ? `Found ${allGigs.length} gigs matching "${search}"`
+        ? `Found ${totalGigs} gigs matching "${search}"`
         : "All gigs fetched successfully"
     )
   );
@@ -182,6 +214,8 @@ const acceptGigFreelancer = asyncHandler(async (req, res)=>{
 
   try {
     const hiredBid = await Bid.findById(bidId).session(session);
+
+    const freelancerId = hiredBid.freelancerId;
   
     if(!hiredBid){
       throw new ApiError(404, "Bid not found");
@@ -202,7 +236,7 @@ const acceptGigFreelancer = asyncHandler(async (req, res)=>{
       throw new ApiError(500, "Error updating the selected bid as hired");
     }
   
-    const updateOtherBids = Bid.updateMany(
+    const updateOtherBids = await Bid.updateMany(
       {
         gigId: gigId,
         _id: {$ne: bidId}
@@ -211,7 +245,7 @@ const acceptGigFreelancer = asyncHandler(async (req, res)=>{
         status: "rejected"
       },
       {session}
-    )
+    );
   
     if(!updateOtherBids){
       throw new ApiError(500, "Error updating other bids as rejected");
