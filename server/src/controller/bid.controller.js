@@ -3,6 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Bid } from "../model/bid.model.js";
 import { Gig } from "../model/gig.model.js";
+import { io, connectedUsers } from "../index.js";
 
 const createBid = asyncHandler(async(req, res)=>{
   const {gigId, message, proposedPrice} = req.body;
@@ -33,6 +34,22 @@ const createBid = asyncHandler(async(req, res)=>{
     proposedPrice,
     status:"pending"
   });
+
+  // Populate the created bid for socket emission
+  const populatedBid = await Bid.findById(createdBid._id)
+    .populate('freelancerId', 'name username email')
+    .populate('gigId', 'title ownerId');
+
+  // Emit socket event to gig owner
+  if (populatedBid.gigId && populatedBid.gigId.ownerId) {
+    const ownerSocketId = connectedUsers.get(populatedBid.gigId.ownerId.toString());
+    if (ownerSocketId) {
+      io.to(ownerSocketId).emit('newBid', {
+        bid: populatedBid,
+        message: `${populatedBid.freelancerId.name} placed a bid of $${proposedPrice} on your gig "${populatedBid.gigId.title}"`
+      });
+    }
+  }
 
   return res.status(200).json(
     new ApiResponse(

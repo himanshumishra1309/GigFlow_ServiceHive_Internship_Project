@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getUserBids, deleteBid, updateBid } from "../service/service";
+import { useSocket } from "../context/socketContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
 import Notification from "../components/Notification";
@@ -16,6 +17,7 @@ const MyBids = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalBids, setTotalBids] = useState(0);
   const itemsPerPage = 6;
+  const { socket } = useSocket();
 
   const [editingBid, setEditingBid] = useState(null);
   const [editFormData, setEditFormData] = useState({ message: "", proposedPrice: "" });
@@ -26,6 +28,27 @@ const MyBids = () => {
   useEffect(() => {
     fetchUserBids();
   }, []);
+
+  // Listen for real-time bid status updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleBidAccepted = () => {
+      fetchUserBids(); // Refresh bids when one is accepted
+    };
+
+    const handleBidRejected = () => {
+      fetchUserBids(); // Refresh bids when one is rejected
+    };
+
+    socket.on('bidAccepted', handleBidAccepted);
+    socket.on('bidRejected', handleBidRejected);
+
+    return () => {
+      socket.off('bidAccepted', handleBidAccepted);
+      socket.off('bidRejected', handleBidRejected);
+    };
+  }, [socket]);
 
   useEffect(() => {
     // Reapply pagination when filter changes

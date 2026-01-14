@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Gig } from "../model/gig.model.js";
 import { Bid } from "../model/bid.model.js";
 import mongoose from "mongoose";
+import { io, connectedUsers } from "../index.js";
 
 const createGig = asyncHandler(async (req, res)=>{
   const {title, description, budget, slug} = req.body;
@@ -264,6 +265,38 @@ const acceptGigFreelancer = asyncHandler(async (req, res)=>{
     }
   
     await session.commitTransaction();
+
+    // Emit socket events
+    // Notify hired freelancer
+    const hiredBidPopulated = await Bid.findById(bidId)
+      .populate('freelancerId', 'name username email')
+      .populate('gigId', 'title budget');
+    
+    const hiredFreelancerSocketId = connectedUsers.get(freelancerId.toString());
+    if (hiredFreelancerSocketId) {
+      io.to(hiredFreelancerSocketId).emit('bidAccepted', {
+        bid: hiredBidPopulated,
+        message: `Congratulations! You've been hired for "${updatedGig.title}"`
+      });
+    }
+
+    // Notify rejected freelancers
+    const rejectedBids = await Bid.find({
+      gigId: gigId,
+      _id: {$ne: bidId},
+      status: 'rejected'
+    }).populate('freelancerId', '_id name');
+
+    rejectedBids.forEach(bid => {
+      const rejectedFreelancerSocketId = connectedUsers.get(bid.freelancerId._id.toString());
+      if (rejectedFreelancerSocketId) {
+        io.to(rejectedFreelancerSocketId).emit('bidRejected', {
+          bidId: bid._id,
+          gigTitle: updatedGig.title,
+          message: `Your bid for "${updatedGig.title}" was not selected`
+        });
+      }
+    });
 
     return res.status(200).json(
       new ApiResponse(

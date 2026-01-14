@@ -4,23 +4,52 @@ import { app } from './app.js';
 import {createServer} from 'http';
 import { Server } from 'socket.io';
 
-// const httpServer = createServer(app);
-// const io = new Server(httpServer, {
-//   cors: {
-//     origin: process.env.CORS_ORIGIN,
-//     credentials: true
-//   }
-// });
-
-
-
 dotenv.config({
   path: './env'
 })
 
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST"]
+  }
+});
+
+// Store connected users (userId -> socketId)
+const connectedUsers = new Map();
+
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
+
+  // User authentication
+  socket.on('authenticate', (userId) => {
+    if (userId) {
+      connectedUsers.set(userId, socket.id);
+      console.log(`User ${userId} authenticated with socket ${socket.id}`);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    // Remove user from connected users
+    for (const [userId, socketId] of connectedUsers.entries()) {
+      if (socketId === socket.id) {
+        connectedUsers.delete(userId);
+        console.log(`User ${userId} disconnected`);
+        break;
+      }
+    }
+  });
+});
+
+// Export io for use in controllers
+export { io, connectedUsers };
+
 connectDB().then(()=>{
-  app.listen(process.env.PORT || 8000, ()=>{
+  httpServer.listen(process.env.PORT || 8000, ()=>{
     console.log(`Server is running at port: ${process.env.PORT}`);
+    console.log('Socket.IO server initialized');
   })
 }).catch((error)=>{
   console.log("MongoDB connection FAILED!!! ", error);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import useAuth from "../context/authContext";
+import { useSocket } from "../context/socketContext";
 import { getGigBids, hireFreelancer, getGigById } from "../service/service";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorMessage from "../components/ErrorMessage";
@@ -12,6 +13,7 @@ const GigBids = () => {
   const { gigId } = useParams();
   const navigate = useNavigate();
   const { user, isLoggedIn } = useAuth();
+  const { socket } = useSocket();
 
   const [gig, setGig] = useState(null);
   const [bids, setBids] = useState([]);
@@ -32,6 +34,24 @@ const GigBids = () => {
     }
     fetchGigAndBids();
   }, [gigId, isLoggedIn, currentPage]);
+
+  // Listen for real-time bid updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewBid = (data) => {
+      // Refresh bids list when new bid comes in for this gig
+      if (data.bid.gigId._id === gigId) {
+        fetchGigAndBids();
+      }
+    };
+
+    socket.on('newBid', handleNewBid);
+
+    return () => {
+      socket.off('newBid', handleNewBid);
+    };
+  }, [socket, gigId]);
 
   const fetchGigAndBids = async () => {
     try {
