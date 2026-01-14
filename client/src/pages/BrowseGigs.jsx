@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import SearchBar from "../components/SearchBar";
 import GigCard from "../components/GigCard";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -7,14 +8,16 @@ import Pagination from "../components/Pagination";
 import { getAllGigs } from "../service/service";
 
 const BrowseGigs = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [gigs, setGigs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page")) || 1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalGigs, setTotalGigs] = useState(0);
   const itemsPerPage = 9;
+  const debounceTimerRef = useRef(null);
 
   const fetchGigs = async (search = "", page = 1) => {
     try {
@@ -33,13 +36,32 @@ const BrowseGigs = () => {
   };
 
   useEffect(() => {
+    const search = searchParams.get("search") || "";
+    setSearchQuery(search);
+    setCurrentPage(1);
+    fetchGigs(search, 1);
+  }, [searchParams]);
+
+  useEffect(() => {
     fetchGigs(searchQuery, currentPage);
   }, [currentPage]);
+
+  const debouncedSearch = useCallback((query) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (query) params.set("search", query);
+      setSearchParams(params);
+    }, 500);
+  }, [setSearchParams]);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
     setCurrentPage(1);
-    fetchGigs(query, 1);
+    debouncedSearch(query);
   };
 
   const handlePageChange = (page) => {
@@ -63,7 +85,7 @@ const BrowseGigs = () => {
       <section className="flex-1 bg-bone py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12">
-            <SearchBar onSearch={handleSearch} />
+            <SearchBar onSearch={handleSearch} initialValue={searchQuery} />
           </div>
 
           {error && <ErrorMessage message={error} />}

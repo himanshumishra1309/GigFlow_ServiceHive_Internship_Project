@@ -1,7 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const SearchBar = ({ onSearch }) => {
-  const [searchText, setSearchText] = useState("");
+const SearchBar = ({ onSearch, initialValue = "" }) => {
+  const [searchText, setSearchText] = useState(initialValue);
+
+  useEffect(() => {
+    setSearchText(initialValue);
+  }, [initialValue]);
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchText(value);
+    if (onSearch) {
+      onSearch(value);
+    }
+  };
 
   const handleSearch = () => {
     if (onSearch) {
@@ -24,7 +36,7 @@ const SearchBar = ({ onSearch }) => {
               type="text"
               placeholder="Search for gigs by title..."
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onChange={handleInputChange}
               onKeyPress={handleKeyPress}
               className="w-full px-5 py-3 pl-12 border-2 border-powder-blue rounded-lg focus:border-royal-blue focus:outline-none transition-colors duration-200 text-royal-blue"
             />
