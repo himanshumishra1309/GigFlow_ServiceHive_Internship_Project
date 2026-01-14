@@ -315,12 +315,19 @@ const GigDetails = () => {
           ) : isLoggedIn ? (
             !showBidForm ? (
               <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-powder-blue text-center">
-                <button
-                  onClick={() => setShowBidForm(true)}
-                  className="bg-royal-blue text-bone px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all duration-200 shadow-lg"
-                >
-                  Place Bid
-                </button>
+                {gig.status === 'assigned' ? (
+                  <div className="bg-gray-100 px-8 py-4 rounded-lg border-2 border-gray-300">
+                    <p className="text-gray-500 font-bold text-lg mb-2">Project Already Assigned</p>
+                    <p className="text-gray-400 text-sm">This project has been assigned to a freelancer</p>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowBidForm(true)}
+                    className="bg-royal-blue text-bone px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all duration-200 shadow-lg"
+                  >
+                    Place Bid
+                  </button>
+                )}
               </div>
             ) : (
               <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-powder-blue">

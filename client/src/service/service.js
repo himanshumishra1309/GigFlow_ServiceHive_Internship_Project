@@ -45,9 +45,9 @@ export const logout = async () => {
   return response.data;
 };
 
-export const getAllGigs = async (search = "", page = 1, limit = 10) => {
+export const getAllGigs = async (search = "", page = 1, limit = 10, includeAssigned = false) => {
   const response = await apiClient.get("/gigs", {
-    params: { search, page, limit },
+    params: { search, page, limit, includeAssigned: includeAssigned ? 'true' : undefined },
   });
   return response.data;
 };

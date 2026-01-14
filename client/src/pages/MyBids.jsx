@@ -401,7 +401,7 @@ const MyBids = () => {
                       </p>
                       <div className="flex items-center space-x-3">
                         <Link to={`/gigs/${bid.gigId?._id}`} className="flex-1">
-                          <button className="w-full bg-royal-blue text-bone py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-200">
+                          <button className="w-full bg-powder-blue text-royal-blue py-3 rounded-lg font-semibold hover:bg-royal-blue hover:text-bone transition-all duration-200 border-2 border-royal-blue">
                             View Project Details
                           </button>
                         </Link>

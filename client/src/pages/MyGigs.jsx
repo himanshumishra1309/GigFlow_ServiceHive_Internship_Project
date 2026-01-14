@@ -23,7 +23,7 @@ const MyGigs = () => {
     try {
       setIsLoading(true);
       setError("");
-      const response = await getAllGigs("", page, 100);
+      const response = await getAllGigs("", page, 100, true);
       const myGigs = response.data.gigs.filter(
         (gig) => gig.ownerId._id === user._id
       );

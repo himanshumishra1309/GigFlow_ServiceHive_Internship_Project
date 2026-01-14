@@ -111,9 +111,13 @@ const updateGig = asyncHandler(async (req, res)=>{
 
 
 const getAllGig = asyncHandler(async (req, res)=>{
-  const {search, page = 1, limit = 10} = req.query;
+  const {search, page = 1, limit = 10, includeAssigned} = req.query;
   
-  let filter = {status: "open"};
+  let filter = {};
+  
+  if (includeAssigned !== 'true') {
+    filter.status = "open";
+  }
 
   if(search){
     filter.title = {$regex: search, $options: 'i'};
