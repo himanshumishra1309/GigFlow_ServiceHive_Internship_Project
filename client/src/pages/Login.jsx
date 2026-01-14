@@ -37,8 +37,8 @@ const Login = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long");
+    if (formData.password.length < 4) {
+      setError("Password must be at least 4 characters long");
       return;
     }
 
@@ -47,10 +47,12 @@ const Login = () => {
       setError("");
 
       const response = await loginService(formData.email, formData.password);
+      console.log("Login response:", response);
       login(response.data.accessToken, response.data.user);
 
       navigate("/");
     } catch (err) {
+      console.error("Login error:", err);
       setError(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);

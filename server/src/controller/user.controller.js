@@ -54,13 +54,13 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All the fields are required");
   }
 
-  const user = await User.find({email: email});
+  const user = await User.findOne({email: email});
 
   if(!user){
     throw new ApiError(404, "User with this email does not exist");
   }
 
-  const isPasswordCorrect = user.isPasswordCorrect(password);
+  const isPasswordCorrect = await user.isPasswordCorrect(password);
 
   if(!isPasswordCorrect){
     throw new ApiError(400, "Password you entered is wrong");
@@ -74,7 +74,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Error updating user's refresh token");
   }
 
-  const loggedInUser = await User.findById(user._id).select("-password - refreshToken");
+  const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
   if(!loggedInUser){
     throw new ApiError(500, "Error finding logged in user");

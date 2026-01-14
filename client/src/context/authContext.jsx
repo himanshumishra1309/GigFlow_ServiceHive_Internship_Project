@@ -11,7 +11,7 @@ export const AuthContextProvider = ({children}) => {
     const token = localStorage.getItem('accessToken');
     const userData = localStorage.getItem('userInfo');
 
-    if(token && user){
+    if(token && userData){
       setAccessToken(token);
       setUser(JSON.parse(userData));
       setIsLoggedIn(true);
@@ -19,6 +19,7 @@ export const AuthContextProvider = ({children}) => {
   }, [])
 
   const login = (token, userData) => {
+    console.log(`context login data: ${token} , ${userData}`);
     localStorage.setItem('accessToken', token);
     localStorage.setItem('userInfo', JSON.stringify(userData));
 
